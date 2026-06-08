@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, Input, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
@@ -10,6 +10,8 @@ import {
   formatDate,
   formatWeight
 } from '@/utils/format';
+import { exportRecordService, refreshData, onDataChange, getCurrentDateTime } from '@/services/dataService';
+import type { ExportRecord } from '@/types';
 
 const statusOptions = [
   { key: 'completed', label: '已完成' },
@@ -21,9 +23,9 @@ const statusOptions = [
 ];
 
 const formatOptions = [
-  { key: 'excel', label: 'Excel (.xlsx)', icon: '📊' },
-  { key: 'pdf', label: 'PDF (.pdf)', icon: '📄' },
-  { key: 'csv', label: 'CSV (.csv)', icon: '📋' }
+  { key: 'excel', label: 'Excel (.xlsx)', icon: '📊', ext: '.xlsx' },
+  { key: 'pdf', label: 'PDF (.pdf)', icon: '📄', ext: '.pdf' },
+  { key: 'csv', label: 'CSV (.csv)', icon: '📋', ext: '.csv' }
 ];
 
 const contentOptions = [
@@ -36,15 +38,39 @@ const contentOptions = [
 ];
 
 const ExportPage: React.FC = () => {
-  const {  } = useApp();
+  const { state } = useApp();
   const [, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'export' | 'history'>('export');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(['completed']);
-  const [selectedFormat, setSelectedFormat] = useState('excel');
+  const [selectedFormat, setSelectedFormat] = useState<string>('excel');
   const [selectedContents, setSelectedContents] = useState<string[]>(['basic', 'cargo', 'ports']);
   const [selectedVoyages, setSelectedVoyages] = useState<string[]>([]);
   const [keyword, setKeyword] = useState('');
+  const [dataVersion, setDataVersion] = useState(0);
+
+  const reloadData = useCallback(() => {
+    setDataVersion(v => v + 1);
+  }, []);
+
+  useDidShow(() => {
+    console.log('[ExportPage] 页面显示');
+    reloadData();
+    const unbind = onDataChange(() => {
+      reloadData();
+    });
+    return () => unbind && unbind();
+  });
+
+  usePullDownRefresh(() => {
+    setRefreshing(true);
+    reloadData();
+    setTimeout(() => {
+      setRefreshing(false);
+      Taro.stopPullDownRefresh();
+    }, 1000);
+  });
 
   const filteredVoyages = useMemo(() => {
     let result = [...mockVoyages];
@@ -73,6 +99,10 @@ const ExportPage: React.FC = () => {
     return result;
   }, [keyword, selectedStatuses, startDate, endDate]);
 
+  const exportRecords = useMemo(() => {
+    return exportRecordService.getAll();
+  }, [dataVersion]);
+
   const isAllSelected = useMemo(() => {
     return filteredVoyages.length > 0 && selectedVoyages.length === filteredVoyages.length;
   }, [filteredVoyages, selectedVoyages]);
@@ -82,18 +112,6 @@ const ExportPage: React.FC = () => {
       .filter(v => selectedVoyages.includes(v.id))
       .reduce((sum, v) => sum + v.totalWeight, 0);
   }, [filteredVoyages, selectedVoyages]);
-
-  useDidShow(() => {
-    console.log('[ExportPage] 页面显示');
-  });
-
-  usePullDownRefresh(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      Taro.stopPullDownRefresh();
-    }, 1000);
-  });
 
   const handleStatusToggle = (status: string) => {
     setSelectedStatuses(prev => {
@@ -162,6 +180,14 @@ const ExportPage: React.FC = () => {
     });
   };
 
+  const generateFileName = () => {
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
+    const timeStr = `${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
+    const formatConfig = formatOptions.find(f => f.key === selectedFormat);
+    return `航次报表_${dateStr}_${timeStr}${formatConfig?.ext || '.xlsx'}`;
+  };
+
   const handleExport = () => {
     if (selectedVoyages.length === 0) {
       Taro.showToast({ title: '请选择要导出的航次', icon: 'none' });
@@ -179,16 +205,54 @@ const ExportPage: React.FC = () => {
         if (res.confirm) {
           Taro.showLoading({ title: '正在导出...' });
           setTimeout(() => {
-            Taro.hideLoading();
-            Taro.showToast({ title: '导出成功', icon: 'success' });
-            console.log('[ExportPage] 导出成功:', {
-              count: selectedVoyages.length,
-              format: selectedFormat,
-              contents: selectedContents
-            });
+            try {
+              const now = getCurrentDateTime();
+              const fileName = generateFileName();
+              const formatConfig = formatOptions.find(f => f.key === selectedFormat);
+              const contentTexts = selectedContents.map(c => {
+                const config = contentOptions.find(o => o.key === c);
+                return config?.label || c;
+              });
+
+              const newRecord: Omit<ExportRecord, 'id'> = {
+                fileName: fileName,
+                format: selectedFormat as 'excel' | 'pdf' | 'csv',
+                formatText: formatConfig?.label || selectedFormat.toUpperCase(),
+                voyageCount: selectedVoyages.length,
+                totalWeight: totalWeight,
+                contents: contentTexts,
+                voyageIds: [...selectedVoyages],
+                status: 'completed',
+                statusText: '已完成',
+                fileUrl: undefined,
+                createTime: now,
+                operator: state.userRole === 'dispatcher' ? '李调度' : '张船长'
+              };
+
+              const result = exportRecordService.createExport(newRecord);
+              Taro.hideLoading();
+              Taro.showToast({ title: '导出成功', icon: 'success' });
+              refreshData();
+              reloadData();
+              setActiveTab('history');
+              console.log('[ExportPage] 导出成功:', result);
+            } catch (error) {
+              Taro.hideLoading();
+              Taro.showToast({ title: '导出失败', icon: 'none' });
+              console.error('[ExportPage] 导出失败:', error);
+            }
           }, 2000);
         }
       }
+    });
+  };
+
+  const handleViewRecord = (record: ExportRecord) => {
+    Taro.showModal({
+      title: '导出记录',
+      content: `文件名：${record.fileName}\n格式：${record.formatText}\n航次数量：${record.voyageCount} 条\n总载货量：${formatWeight(record.totalWeight)}\n生成时间：${record.createTime}\n操作人：${record.operator}`,
+      showCancel: false,
+      confirmText: '确定'
     });
   };
 
@@ -202,13 +266,8 @@ const ExportPage: React.FC = () => {
     setKeyword('');
   };
 
-  return (
-    <ScrollView className={styles.pageContainer} scrollY>
-      <View className={styles.header}>
-        <Text className={styles.title}>航次导出</Text>
-        <Text className={styles.subtitle}>导出航次记录报表</Text>
-      </View>
-
+  const renderExportForm = () => (
+    <>
       <View className={styles.section}>
         <Text className={styles.sectionTitle}>
           <Text className={styles.titleIcon}>🔍</Text>
@@ -439,6 +498,81 @@ const ExportPage: React.FC = () => {
           <Text className={styles.btnIcon}>📤</Text>
           导出 {selectedVoyages.length > 0 && `(${selectedVoyages.length})`}
         </View>
+      </View>
+    </>
+  );
+
+  const renderExportHistory = () => (
+    <View className={styles.section}>
+      <Text className={styles.sectionTitle}>
+        <Text className={styles.titleIcon}>📁</Text>
+        导出记录
+      </Text>
+
+      {exportRecords.length === 0 ? (
+        <View className={styles.emptyState}>
+          <Text className={styles.emptyIcon}>📭</Text>
+          <Text className={styles.emptyText}>暂无导出记录</Text>
+        </View>
+      ) : (
+        <View className={styles.recordList}>
+          {exportRecords.map((record) => (
+            <View
+              key={record.id}
+              className={styles.recordItem}
+              onClick={() => handleViewRecord(record)}
+            >
+              <View className={styles.recordIcon}>
+                {record.format === 'excel' && '📊'}
+                {record.format === 'pdf' && '📄'}
+                {record.format === 'csv' && '📋'}
+              </View>
+              <View className={styles.recordInfo}>
+                <Text className={styles.recordName}>{record.fileName}</Text>
+                <Text className={styles.recordMeta}>
+                  {record.formatText} · {record.voyageCount} 条 · {formatWeight(record.totalWeight)}
+                </Text>
+                <Text className={styles.recordTime}>
+                  生成于 {record.createTime} · {record.operator}
+                </Text>
+              </View>
+              <View className={classnames(styles.recordStatus, styles[record.status])}>
+                {record.statusText}
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+
+  return (
+    <ScrollView className={styles.pageContainer} scrollY>
+      <View className={styles.header}>
+        <Text className={styles.title}>航次导出</Text>
+        <Text className={styles.subtitle}>导出航次记录报表</Text>
+      </View>
+
+      <View className={styles.tabBar}>
+        <View
+          className={classnames(styles.tabItem, activeTab === 'export' && styles.active)}
+          onClick={() => setActiveTab('export')}
+        >
+          <Text className={styles.tabText}>导出</Text>
+        </View>
+        <View
+          className={classnames(styles.tabItem, activeTab === 'history' && styles.active)}
+          onClick={() => setActiveTab('history')}
+        >
+          <Text className={styles.tabText}>导出记录</Text>
+          {exportRecords.length > 0 && (
+            <View className={styles.tabBadge}>{exportRecords.length}</View>
+          )}
+        </View>
+      </View>
+
+      <View className={styles.content}>
+        {activeTab === 'export' ? renderExportForm() : renderExportHistory()}
       </View>
     </ScrollView>
   );

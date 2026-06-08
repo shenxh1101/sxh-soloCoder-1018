@@ -1,14 +1,25 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, Button, Input, Textarea, ScrollView } from '@tarojs/components';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, Text, Button, Input, Textarea, ScrollView, Picker } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useApp } from '@/store/AppContext';
-import { mockLoadingRecords, mockOilWaterSupplies, getLoadingRecordsByVoyage, getOilWaterSuppliesByVoyage } from '@/data/ship';
 import { getCurrentVoyage } from '@/data/voyage';
 import { formatDateTime, formatWeight, formatNumber } from '@/utils/format';
 import UploadItem from '@/components/UploadItem';
-import type { LoadingRecord } from '@/types';
+import {
+  loadingRecordService,
+  oilWaterSupplyService,
+  onDataChange,
+  refreshData
+} from '@/services/dataService';
+import type { LoadingRecord, OilWaterSupply } from '@/types';
+
+const supplyTypeOptions = [
+  { key: 'fuel', label: '燃油补给' },
+  { key: 'water', label: '淡水补给' },
+  { key: 'lubricant', label: '润滑油补给' }
+];
 
 const LoadingPage: React.FC = () => {
   const { state } = useApp();
@@ -20,34 +31,55 @@ const LoadingPage: React.FC = () => {
   const [remark, setRemark] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [, setRefreshing] = useState(false);
+  const [dataVersion, setDataVersion] = useState(0);
+
+  const [supplyType, setSupplyType] = useState<'fuel' | 'water' | 'lubricant'>('fuel');
+  const [supplyQuantity, setSupplyQuantity] = useState('');
+  const [supplyPort, setSupplyPort] = useState('');
+  const [supplySupplier, setSupplySupplier] = useState('');
+  const [supplyAmount, setSupplyAmount] = useState('');
+  const [supplyOperator, setSupplyOperator] = useState('');
 
   const currentVoyage = useMemo(() => getCurrentVoyage(), []);
 
-  const loadingRecords = useMemo(() => {
-    if (currentVoyage) {
-      return getLoadingRecordsByVoyage(currentVoyage.id);
-    }
-    return mockLoadingRecords;
-  }, [currentVoyage]);
-
-  const supplyRecords = useMemo(() => {
-    if (currentVoyage) {
-      return getOilWaterSuppliesByVoyage(currentVoyage.id);
-    }
-    return mockOilWaterSupplies;
-  }, [currentVoyage]);
+  const reloadData = useCallback(() => {
+    setDataVersion(v => v + 1);
+  }, []);
 
   useDidShow(() => {
     console.log('[LoadingPage] 页面显示');
+    reloadData();
+  });
+
+  useDidShow(() => {
+    const unbind = onDataChange(() => {
+      reloadData();
+    });
+    return () => unbind && unbind();
   });
 
   usePullDownRefresh(() => {
     setRefreshing(true);
+    reloadData();
     setTimeout(() => {
       setRefreshing(false);
       Taro.stopPullDownRefresh();
     }, 1000);
   });
+
+  const loadingRecords = useMemo(() => {
+    if (currentVoyage) {
+      return loadingRecordService.getByVoyageId(currentVoyage.id);
+    }
+    return loadingRecordService.getAll();
+  }, [currentVoyage, dataVersion]);
+
+  const supplyRecords = useMemo(() => {
+    if (currentVoyage) {
+      return oilWaterSupplyService.getByVoyageId(currentVoyage.id);
+    }
+    return oilWaterSupplyService.getAll();
+  }, [currentVoyage, dataVersion]);
 
   const handleConfirm = (record: LoadingRecord) => {
     setSelectedRecord(record);
@@ -60,6 +92,13 @@ const LoadingPage: React.FC = () => {
 
   const handleAddSupply = () => {
     setFormType('supply');
+    setSupplyType('fuel');
+    setSupplyQuantity('');
+    setSupplyPort('');
+    setSupplySupplier('');
+    setSupplyAmount('');
+    setSupplyOperator('张船长');
+    setPhotos([]);
     setShowForm(true);
   };
 
@@ -83,19 +122,100 @@ const LoadingPage: React.FC = () => {
     setPhotos(newPhotos);
   };
 
-  const handleSubmit = () => {
-    if (formType === 'confirm' && !actualWeight) {
+  const handleSubmitLoadingConfirm = () => {
+    if (!selectedRecord) return;
+    if (!actualWeight) {
       Taro.showToast({ title: '请输入实际重量', icon: 'none' });
       return;
     }
 
     Taro.showLoading({ title: '提交中...' });
     setTimeout(() => {
-      Taro.hideLoading();
-      Taro.showToast({ title: '提交成功', icon: 'success' });
-      setShowForm(false);
-      console.log('[LoadingPage] 提交成功');
-    }, 1000);
+      try {
+        const weight = parseFloat(actualWeight);
+        const result = loadingRecordService.confirmLoading(
+          selectedRecord.id,
+          weight,
+          photos,
+          remark,
+          '张船长'
+        );
+
+        if (result) {
+          Taro.hideLoading();
+          Taro.showToast({ title: '提交成功', icon: 'success' });
+          setShowForm(false);
+          refreshData();
+          reloadData();
+          console.log('[LoadingPage] 装卸确认成功:', result);
+        } else {
+          Taro.hideLoading();
+          Taro.showToast({ title: '提交失败', icon: 'none' });
+        }
+      } catch (error) {
+        Taro.hideLoading();
+        Taro.showToast({ title: '提交失败', icon: 'none' });
+        console.error('[LoadingPage] 装卸确认失败:', error);
+      }
+    }, 800);
+  };
+
+  const handleSubmitSupply = () => {
+    if (!supplyQuantity) {
+      Taro.showToast({ title: '请输入补给数量', icon: 'none' });
+      return;
+    }
+    if (!supplyPort) {
+      Taro.showToast({ title: '请输入补给港口', icon: 'none' });
+      return;
+    }
+
+    Taro.showLoading({ title: '提交中...' });
+    setTimeout(() => {
+      try {
+        const typeConfig = supplyTypeOptions.find(o => o.key === supplyType);
+        const quantity = parseFloat(supplyQuantity);
+        const amount = parseFloat(supplyAmount) || 0;
+
+        if (!currentVoyage) {
+          Taro.hideLoading();
+          Taro.showToast({ title: '无当前航次', icon: 'none' });
+          return;
+        }
+
+        const newSupply: Omit<OilWaterSupply, 'id' | 'recordTime'> = {
+          voyageId: currentVoyage.id,
+          type: supplyType,
+          quantity,
+          unit: supplyType === 'water' ? '吨' : supplyType === 'lubricant' ? '桶' : '吨',
+          port: supplyPort,
+          supplier: supplySupplier || (typeConfig?.label || '补给'),
+          amount,
+          receiptPhotos: photos,
+          operator: supplyOperator || '张船长'
+        };
+
+        const result = oilWaterSupplyService.addSupply(newSupply);
+        Taro.hideLoading();
+        Taro.showToast({ title: '记录成功', icon: 'success' });
+        setShowForm(false);
+        refreshData();
+        reloadData();
+        console.log('[LoadingPage] 补给记录成功:', result);
+      } catch (error) {
+        Taro.hideLoading();
+        Taro.showToast({ title: '记录失败', icon: 'none' });
+        console.error('[LoadingPage] 补给记录失败:', error);
+      }
+    }, 800);
+  };
+
+  const handleSubmit = () => {
+    if (formType === 'confirm') {
+      handleSubmitLoadingConfirm();
+    } else {
+      handleSubmitSupply();
+    }
   };
 
   const handleArrivalConfirm = () => {
@@ -304,7 +424,7 @@ const LoadingPage: React.FC = () => {
               </View>
               <View className={styles.formItem}>
                 <Text className={styles.formLabel}>单据照片</Text>
-                <View>
+                <View className={styles.photoUploadRow}>
                   {photos.map((photo, index) => (
                     <UploadItem
                       key={index}
@@ -335,20 +455,30 @@ const LoadingPage: React.FC = () => {
                 <Text className={styles.formLabel}>
                   <Text className={styles.required}>*</Text>补给类型
                 </Text>
-                <View className={styles.formInput} style={{ display: 'flex', alignItems: 'center' }}>
-                  <Text>燃油补给</Text>
-                </View>
+                <Picker
+                  mode="selector"
+                  range={supplyTypeOptions.map(o => o.label)}
+                  value={supplyTypeOptions.findIndex(o => o.key === supplyType)}
+                  onChange={(e) => {
+                    const idx = parseInt(String(e.detail.value));
+                    setSupplyType(supplyTypeOptions[idx].key as any);
+                  }}
+                >
+                  <View className={styles.formInput}>
+                    {supplyTypeOptions.find(o => o.key === supplyType)?.label}
+                  </View>
+                </Picker>
               </View>
               <View className={styles.formItem}>
                 <Text className={styles.formLabel}>
-                  <Text className={styles.required}>*</Text>补给数量（吨）
+                  <Text className={styles.required}>*</Text>补给数量（{supplyType === 'lubricant' ? '桶' : '吨'}）
                 </Text>
                 <Input
                   className={styles.formInput}
                   type="digit"
                   placeholder="请输入补给数量"
-                  value={actualWeight}
-                  onInput={(e) => setActualWeight(e.detail.value)}
+                  value={supplyQuantity}
+                  onInput={(e) => setSupplyQuantity(e.detail.value)}
                 />
               </View>
               <View className={styles.formItem}>
@@ -358,13 +488,41 @@ const LoadingPage: React.FC = () => {
                 <Input
                   className={styles.formInput}
                   placeholder="请输入补给港口"
-                  value={remark}
-                  onInput={(e) => setRemark(e.detail.value)}
+                  value={supplyPort}
+                  onInput={(e) => setSupplyPort(e.detail.value)}
+                />
+              </View>
+              <View className={styles.formItem}>
+                <Text className={styles.formLabel}>供应商</Text>
+                <Input
+                  className={styles.formInput}
+                  placeholder="请输入供应商（可选）"
+                  value={supplySupplier}
+                  onInput={(e) => setSupplySupplier(e.detail.value)}
+                />
+              </View>
+              <View className={styles.formItem}>
+                <Text className={styles.formLabel}>金额（元）</Text>
+                <Input
+                  className={styles.formInput}
+                  type="digit"
+                  placeholder="请输入金额（可选）"
+                  value={supplyAmount}
+                  onInput={(e) => setSupplyAmount(e.detail.value)}
+                />
+              </View>
+              <View className={styles.formItem}>
+                <Text className={styles.formLabel}>操作人</Text>
+                <Input
+                  className={styles.formInput}
+                  placeholder="请输入操作人"
+                  value={supplyOperator}
+                  onInput={(e) => setSupplyOperator(e.detail.value)}
                 />
               </View>
               <View className={styles.formItem}>
                 <Text className={styles.formLabel}>票据照片</Text>
-                <View>
+                <View className={styles.photoUploadRow}>
                   {photos.map((photo, index) => (
                     <UploadItem
                       key={index}

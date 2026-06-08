@@ -352,6 +352,12 @@
         color: $color-text-primary;
         box-sizing: border-box;
       }
+
+      .photoUploadRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-sm;
+      }
     }
 
     .submitBtn {

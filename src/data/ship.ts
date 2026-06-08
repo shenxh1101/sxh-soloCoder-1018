@@ -194,7 +194,8 @@ export const mockLoadingRecords: LoadingRecord[] = [
       'https://picsum.photos/id/2/600/400'
     ],
     remark: '装货完成，数量准确',
-    status: 'confirmed'
+    status: 'confirmed',
+    statusText: '已确认'
   },
   {
     id: 'lr002',
@@ -211,7 +212,8 @@ export const mockLoadingRecords: LoadingRecord[] = [
       'https://picsum.photos/id/3/600/400'
     ],
     remark: '实际装载量比计划少20吨，已与码头确认',
-    status: 'confirmed'
+    status: 'confirmed',
+    statusText: '已确认'
   },
   {
     id: 'lr003',
@@ -224,7 +226,8 @@ export const mockLoadingRecords: LoadingRecord[] = [
     port: '武汉港',
     operator: '',
     photos: [],
-    status: 'pending'
+    status: 'pending',
+    statusText: '待确认'
   },
   {
     id: 'lr004',
@@ -237,7 +240,8 @@ export const mockLoadingRecords: LoadingRecord[] = [
     port: '南京港',
     operator: '',
     photos: [],
-    status: 'pending'
+    status: 'pending',
+    statusText: '待确认'
   }
 ];
 

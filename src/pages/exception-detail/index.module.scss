@@ -52,6 +52,26 @@
       font-size: $font-size-sm;
       font-weight: $font-weight-medium;
       background: rgba(255, 255, 255, 0.25);
+
+      &.pending {
+        background: rgba(245, 63, 63, 0.15);
+        color: $color-error;
+      }
+
+      &.processing {
+        background: rgba(255, 125, 0, 0.15);
+        color: $color-warning;
+      }
+
+      &.resolved {
+        background: rgba(0, 180, 42, 0.15);
+        color: $color-success;
+      }
+
+      &.closed {
+        background: rgba(134, 144, 156, 0.15);
+        color: $color-text-secondary;
+      }
     }
   }
 }

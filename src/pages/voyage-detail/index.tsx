@@ -1,20 +1,44 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, Image, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow, useRouter, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useApp } from '@/store/AppContext';
 import { getVoyageById } from '@/data/voyage';
-import { getShipById, getLoadingRecordsByVoyage, getOilWaterSuppliesByVoyage } from '@/data/ship';
+import { getShipById } from '@/data/ship';
 import { getVoyageStatusConfig, formatDateTime, formatWeight, formatPercentage } from '@/utils/format';
+import { loadingRecordService, oilWaterSupplyService, onDataChange } from '@/services/dataService';
 import type { Voyage, Ship, LoadingRecord, OilWaterSupply } from '@/types';
 
 const VoyageDetailPage: React.FC = () => {
   const { state } = useApp();
   const router = useRouter();
   const [, setRefreshing] = useState(false);
+  const [dataVersion, setDataVersion] = useState(0);
 
   const voyageId = router.params.id;
+
+  const reloadData = useCallback(() => {
+    setDataVersion(v => v + 1);
+  }, []);
+
+  useDidShow(() => {
+    console.log('[VoyageDetailPage] 页面显示，航次ID:', voyageId);
+    reloadData();
+    const unbind = onDataChange(() => {
+      reloadData();
+    });
+    return () => unbind && unbind();
+  });
+
+  usePullDownRefresh(() => {
+    setRefreshing(true);
+    reloadData();
+    setTimeout(() => {
+      setRefreshing(false);
+      Taro.stopPullDownRefresh();
+    }, 1000);
+  });
 
   const voyage = useMemo<Voyage | undefined>(() => {
     return getVoyageById(voyageId || '');
@@ -27,27 +51,13 @@ const VoyageDetailPage: React.FC = () => {
 
   const loadingRecords = useMemo<LoadingRecord[]>(() => {
     if (!voyage) return [];
-    return getLoadingRecordsByVoyage(voyage.id);
-  }, [voyage]);
+    return loadingRecordService.getByVoyageId(voyage.id);
+  }, [voyage, dataVersion]);
 
   const supplies = useMemo<OilWaterSupply[]>(() => {
     if (!voyage) return [];
-    return getOilWaterSuppliesByVoyage(voyage.id);
-  }, [voyage]);
-
-
-
-  useDidShow(() => {
-    console.log('[VoyageDetailPage] 页面显示，航次ID:', voyageId);
-  });
-
-  usePullDownRefresh(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      Taro.stopPullDownRefresh();
-    }, 1000);
-  });
+    return oilWaterSupplyService.getByVoyageId(voyage.id);
+  }, [voyage, dataVersion]);
 
   const handleArrivalConfirm = () => {
     Taro.showModal({
@@ -136,7 +146,7 @@ const VoyageDetailPage: React.FC = () => {
         </View>
 
         <View className={styles.statusRow}>
-          <View className={styles.statusTag}>
+          <View className={classnames(styles.statusTag, styles[voyage.status])}>
             {statusConfig.text}
           </View>
           <Text className={styles.eta}>
@@ -308,7 +318,7 @@ const VoyageDetailPage: React.FC = () => {
                     {record.type === 'loading' ? '装货' : '卸货'} - {record.cargoName}
                   </Text>
                   <Text className={classnames(styles.recordStatus, styles[record.status])}>
-                    {record.status === 'confirmed' ? '已确认' : record.status === 'pending' ? '待确认' : '已拒绝'}
+                    {record.statusText || (record.status === 'confirmed' ? '已确认' : record.status === 'pending' ? '待确认' : '已拒绝')}
                   </Text>
                 </View>
                 <View className={styles.recordInfo}>
@@ -368,7 +378,7 @@ const VoyageDetailPage: React.FC = () => {
             {supplies.map((supply) => (
               <View className={styles.supplyItem} key={supply.id}>
                 <View className={styles.supplyHeader}>
-                  <Text className={styles.supplyType}>
+                  <Text className={classnames(styles.supplyType, styles[supply.type])}>
                     <Text className={styles.typeIcon}>{getSupplyTypeIcon(supply.type)}</Text>
                     {getSupplyTypeText(supply.type)}
                   </Text>

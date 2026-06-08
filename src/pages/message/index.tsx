@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, Button, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useApp } from '@/store/AppContext';
-import { getMessagesByType, getUnreadMessagesCount, getUnreadMessagesByType } from '@/data/message';
 import { getMessageTypeConfig, formatDateTime, getRelativeTime } from '@/utils/format';
+import { messageService, refreshData, onDataChange, getCurrentDateTime } from '@/services/dataService';
 import type { Message } from '@/types';
 
 const typeFilters = [
@@ -35,37 +35,74 @@ const MessagePage: React.FC = () => {
   const [showDetail, setShowDetail] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [, setRefreshing] = useState(false);
+  const [dataVersion, setDataVersion] = useState(0);
 
-  const messageList = useMemo(() => {
-    return getMessagesByType(activeFilter);
-  }, [activeFilter]);
+  const reloadData = useCallback(() => {
+    setDataVersion(v => v + 1);
+  }, []);
 
   useDidShow(() => {
     console.log('[MessagePage] 页面显示');
+    reloadData();
+    const unbind = onDataChange(() => {
+      reloadData();
+    });
+    return () => unbind && unbind();
   });
 
   usePullDownRefresh(() => {
     setRefreshing(true);
+    reloadData();
     setTimeout(() => {
       setRefreshing(false);
       Taro.stopPullDownRefresh();
     }, 1000);
   });
 
+  const messageList = useMemo(() => {
+    return messageService.getByType(activeFilter);
+  }, [activeFilter, dataVersion]);
+
+  const unreadCount = useMemo(() => {
+    return messageService.getUnreadCount();
+  }, [dataVersion]);
+
+  const getUnreadByType = useCallback((type: string) => {
+    return messageService.getUnreadCountByType(type);
+  }, [dataVersion]);
+
   const handleMessageClick = (message: Message) => {
+    if (!message.isRead) {
+      const now = getCurrentDateTime();
+      messageService.markAsRead(message.id, now);
+      refreshData();
+      reloadData();
+    }
     setSelectedMessage(message);
     setShowDetail(true);
     console.log('[MessagePage] 查看消息:', message.id);
   };
 
   const handleConfirm = () => {
+    if (!selectedMessage) return;
     Taro.showModal({
       title: '确认收到',
       content: '确认已阅读并执行该调度指令？',
       success: (res) => {
         if (res.confirm) {
-          Taro.showToast({ title: '已确认', icon: 'success' });
-          setShowDetail(false);
+          try {
+            const now = getCurrentDateTime();
+            const result = messageService.markAsRead(selectedMessage.id, now);
+            if (result) {
+              Taro.showToast({ title: '已确认', icon: 'success' });
+              setShowDetail(false);
+              refreshData();
+              reloadData();
+            }
+          } catch (error) {
+            console.error('[MessagePage] 确认收到失败:', error);
+            Taro.showToast({ title: '操作失败', icon: 'none' });
+          }
         }
       }
     });
@@ -122,7 +159,7 @@ const MessagePage: React.FC = () => {
             <Text className={styles.time}>{getRelativeTime(message.createTime)}</Text>
           </View>
 
-          {message.extra?.actionRequired && state.userRole === 'crew' && (
+          {message.extra?.actionRequired && state.userRole === 'crew' && !message.isRead && (
             <View className={styles.actionRow}>
               <Button
                 className={classnames(styles.actionBtn, styles.primary)}
@@ -202,7 +239,7 @@ const MessagePage: React.FC = () => {
                 查看航次
               </Button>
             )}
-            {selectedMessage.extra?.actionRequired && state.userRole === 'crew' ? (
+            {selectedMessage.extra?.actionRequired && state.userRole === 'crew' && !selectedMessage.isRead ? (
               <Button
                 className={classnames(styles.actionBtn, styles.primary)}
                 onClick={handleConfirm}
@@ -228,8 +265,8 @@ const MessagePage: React.FC = () => {
       <View className={styles.header}>
         <View className={styles.headerTop}>
           <Text className={styles.title}>消息中心</Text>
-          {getUnreadMessagesCount() > 0 && (
-            <View className={styles.unreadBadge}>{getUnreadMessagesCount()}</View>
+          {unreadCount > 0 && (
+            <View className={styles.unreadBadge}>{unreadCount}</View>
           )}
         </View>
         <Text className={styles.subtitle}>
@@ -248,11 +285,11 @@ const MessagePage: React.FC = () => {
             onClick={() => setActiveFilter(filter.key)}
           >
             {filter.label}
-            {filter.key !== 'all' && getUnreadMessagesByType(filter.key) > 0 && (
-              <Text> ({getUnreadMessagesByType(filter.key)})</Text>
+            {filter.key !== 'all' && getUnreadByType(filter.key) > 0 && (
+              <Text> ({getUnreadByType(filter.key)})</Text>
             )}
-            {filter.key === 'all' && getUnreadMessagesCount() > 0 && (
-              <Text> ({getUnreadMessagesCount()})</Text>
+            {filter.key === 'all' && unreadCount > 0 && (
+              <Text> ({unreadCount})</Text>
             )}
           </Button>
         ))}

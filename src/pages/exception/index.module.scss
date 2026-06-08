@@ -304,6 +304,12 @@
         font-weight: $font-weight-medium;
         margin-bottom: $spacing-sm;
       }
+
+      .photoUploadRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-sm;
+      }
     }
 
     .submitBtn {

@@ -109,6 +109,7 @@ export interface LoadingRecord {
   photos: string[];
   remark?: string;
   status: 'pending' | 'confirmed' | 'rejected';
+  statusText: string;
 }
 
 export interface OilWaterSupply {
@@ -157,6 +158,7 @@ export interface Message {
   receiver: string;
   voyageId?: string;
   isRead: boolean;
+  readTime?: string;
   priority: 'normal' | 'urgent' | 'important';
   createTime: string;
   extra?: Record<string, any>;
@@ -177,4 +179,20 @@ export interface TimeLineItem {
   title: string;
   description: string;
   status: 'completed' | 'current' | 'pending';
+}
+
+export interface ExportRecord {
+  id: string;
+  fileName: string;
+  format: 'excel' | 'pdf' | 'csv';
+  formatText: string;
+  voyageCount: number;
+  totalWeight: number;
+  contents: string[];
+  voyageIds: string[];
+  status: 'pending' | 'completed' | 'failed';
+  statusText: string;
+  fileUrl?: string;
+  createTime: string;
+  operator: string;
 }

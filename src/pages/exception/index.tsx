@@ -1,12 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, Button, Input, Textarea, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useApp } from '@/store/AppContext';
-import { getExceptionsByStatus, getPendingExceptionsCount } from '@/data/exception';
 import { getExceptionTypeConfig, getExceptionStatusConfig, getRelativeTime } from '@/utils/format';
 import UploadItem from '@/components/UploadItem';
+import { exceptionService, refreshData, onDataChange, getCurrentDateTime } from '@/services/dataService';
+import { getCurrentVoyage } from '@/data/voyage';
 import type { Exception, ExceptionType } from '@/types';
 
 const typeOptions = [
@@ -26,6 +27,7 @@ const ExceptionPage: React.FC = () => {
   const [location, setLocation] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [, setRefreshing] = useState(false);
+  const [dataVersion, setDataVersion] = useState(0);
 
   const exceptionTypes = ['all', 'pending', 'processing', 'resolved', 'closed'];
   const filterLabels: Record<string, string> = {
@@ -36,21 +38,40 @@ const ExceptionPage: React.FC = () => {
     closed: '已关闭'
   };
 
-  const exceptionList = useMemo(() => {
-    return getExceptionsByStatus(activeFilter);
-  }, [activeFilter]);
+  const currentVoyage = useMemo(() => getCurrentVoyage(), []);
+
+  const reloadData = useCallback(() => {
+    setDataVersion(v => v + 1);
+  }, []);
 
   useDidShow(() => {
     console.log('[ExceptionPage] 页面显示');
+    reloadData();
+  });
+
+  useDidShow(() => {
+    const unbind = onDataChange(() => {
+      reloadData();
+    });
+    return () => unbind && unbind();
   });
 
   usePullDownRefresh(() => {
     setRefreshing(true);
+    reloadData();
     setTimeout(() => {
       setRefreshing(false);
       Taro.stopPullDownRefresh();
     }, 1000);
   });
+
+  const exceptionList = useMemo(() => {
+    return exceptionService.getByStatus(activeFilter);
+  }, [activeFilter, dataVersion]);
+
+  const pendingCount = useMemo(() => {
+    return exceptionService.getPendingCount();
+  }, [dataVersion]);
 
   const handleReport = () => {
     setSelectedType('congestion');
@@ -97,11 +118,39 @@ const ExceptionPage: React.FC = () => {
 
     Taro.showLoading({ title: '提交中...' });
     setTimeout(() => {
-      Taro.hideLoading();
-      Taro.showToast({ title: '上报成功', icon: 'success' });
-      setShowForm(false);
-      console.log('[ExceptionPage] 异常上报成功');
-    }, 1000);
+      try {
+        const typeConfig = typeOptions.find(o => o.key === selectedType);
+        const now = getCurrentDateTime();
+
+        const newException: Omit<Exception, 'id' | 'status' | 'statusText'> = {
+          voyageId: currentVoyage?.id || 'v001',
+          shipId: currentVoyage?.shipId || 's001',
+          shipName: currentVoyage?.shipName || '长江之星',
+          type: selectedType,
+          typeText: typeConfig?.label || '异常',
+          title: title.trim(),
+          description: description.trim(),
+          location: location.trim(),
+          occurrenceTime: now,
+          photos: [...photos],
+          reporter: '张船长',
+          createTime: now,
+          updateTime: now
+        };
+
+        const result = exceptionService.addException(newException);
+        Taro.hideLoading();
+        Taro.showToast({ title: '上报成功', icon: 'success' });
+        setShowForm(false);
+        refreshData();
+        reloadData();
+        console.log('[ExceptionPage] 异常上报成功:', result);
+      } catch (error) {
+        Taro.hideLoading();
+        Taro.showToast({ title: '上报失败', icon: 'none' });
+        console.error('[ExceptionPage] 异常上报失败:', error);
+      }
+    }, 800);
   };
 
   const handleExceptionClick = (exception: Exception) => {
@@ -110,13 +159,23 @@ const ExceptionPage: React.FC = () => {
     });
   };
 
-  const handleProcess = (_exception: Exception) => {
+  const handleProcess = (exception: Exception) => {
     Taro.showModal({
       title: '处理异常',
       content: '确认开始处理该异常？',
       success: (res) => {
         if (res.confirm) {
-          Taro.showToast({ title: '已标记为处理中', icon: 'success' });
+          try {
+            const result = exceptionService.startProcessing(exception.id, '李调度');
+            if (result) {
+              Taro.showToast({ title: '已标记为处理中', icon: 'success' });
+              refreshData();
+              reloadData();
+            }
+          } catch (error) {
+            console.error('[ExceptionPage] 开始处理异常失败:', error);
+            Taro.showToast({ title: '操作失败', icon: 'none' });
+          }
         }
       }
     });
@@ -218,7 +277,7 @@ const ExceptionPage: React.FC = () => {
                     <Text>{option.label}</Text>
                   </Button>
                 </View>
-                ))}
+              ))}
             </View>
           </View>
 
@@ -260,7 +319,7 @@ const ExceptionPage: React.FC = () => {
 
           <View className={styles.photoSection}>
             <Text className={styles.formLabel}>现场照片（可选）</Text>
-            <View>
+            <View className={styles.photoUploadRow}>
               {photos.map((photo, index) => (
                 <UploadItem
                   key={index}
@@ -289,7 +348,7 @@ const ExceptionPage: React.FC = () => {
         <Text className={styles.subtitle}>
           {state.userRole === 'crew'
             ? '及时上报航行中的异常情况'
-            : `待处理异常 ${getPendingExceptionsCount()} 条`}
+            : `待处理异常 ${pendingCount} 条`}
         </Text>
       </View>
 
@@ -306,7 +365,7 @@ const ExceptionPage: React.FC = () => {
             {filterLabels[type]}
             {type === 'pending' && (
               <Text className={styles.count}>
-                ({getExceptionsByStatus('pending').length + getExceptionsByStatus('processing').length})
+                ({pendingCount})
               </Text>
             )}
           </Button>

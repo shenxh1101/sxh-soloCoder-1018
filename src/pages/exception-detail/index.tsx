@@ -1,16 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, Text, Image, ScrollView, Textarea } from '@tarojs/components';
 import Taro, { useDidShow, useRouter, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useApp } from '@/store/AppContext';
-import { getExceptionById } from '@/data/exception';
 import { getVoyageById } from '@/data/voyage';
 import {
   getExceptionTypeConfig,
   getExceptionStatusConfig,
   formatDateTime
 } from '@/utils/format';
+import { exceptionService, refreshData, onDataChange, getCurrentDateTime } from '@/services/dataService';
 import type { Exception, Voyage, TimeLineItem } from '@/types';
 
 const ExceptionDetailPage: React.FC = () => {
@@ -19,12 +19,35 @@ const ExceptionDetailPage: React.FC = () => {
   const [, setRefreshing] = useState(false);
   const [handleResult, setHandleResult] = useState('');
   const [showHandleForm, setShowHandleForm] = useState(false);
+  const [dataVersion, setDataVersion] = useState(0);
 
   const exceptionId = router.params.id;
 
+  const reloadData = useCallback(() => {
+    setDataVersion(v => v + 1);
+  }, []);
+
+  useDidShow(() => {
+    console.log('[ExceptionDetailPage] 页面显示，异常ID:', exceptionId);
+    reloadData();
+    const unbind = onDataChange(() => {
+      reloadData();
+    });
+    return () => unbind && unbind();
+  });
+
+  usePullDownRefresh(() => {
+    setRefreshing(true);
+    reloadData();
+    setTimeout(() => {
+      setRefreshing(false);
+      Taro.stopPullDownRefresh();
+    }, 1000);
+  });
+
   const exception = useMemo<Exception | undefined>(() => {
-    return getExceptionById(exceptionId || '');
-  }, [exceptionId]);
+    return exceptionService.getById(exceptionId || '');
+  }, [exceptionId, dataVersion]);
 
   const voyage = useMemo<Voyage | undefined>(() => {
     if (!exception) return undefined;
@@ -60,18 +83,6 @@ const ExceptionDetailPage: React.FC = () => {
     return items;
   }, [exception]);
 
-  useDidShow(() => {
-    console.log('[ExceptionDetailPage] 页面显示，异常ID:', exceptionId);
-  });
-
-  usePullDownRefresh(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      Taro.stopPullDownRefresh();
-    }, 1000);
-  });
-
   const handleProcess = () => {
     if (state.userRole !== 'dispatcher') {
       Taro.showToast({ title: '只有调度员可以处理', icon: 'none' });
@@ -90,7 +101,18 @@ const ExceptionDetailPage: React.FC = () => {
       content: '确认该异常已解决？',
       success: (res) => {
         if (res.confirm) {
-          Taro.showToast({ title: '已标记为已解决', icon: 'success' });
+          try {
+            const now = getCurrentDateTime();
+            const result = exceptionService.resolve(exceptionId || '', '李调度', now);
+            if (result) {
+              Taro.showToast({ title: '已标记为已解决', icon: 'success' });
+              refreshData();
+              reloadData();
+            }
+          } catch (error) {
+            console.error('[ExceptionDetailPage] 标记解决失败:', error);
+            Taro.showToast({ title: '操作失败', icon: 'none' });
+          }
         }
       }
     });
@@ -106,7 +128,18 @@ const ExceptionDetailPage: React.FC = () => {
       content: '确认关闭该异常记录？',
       success: (res) => {
         if (res.confirm) {
-          Taro.showToast({ title: '已关闭', icon: 'success' });
+          try {
+            const now = getCurrentDateTime();
+            const result = exceptionService.close(exceptionId || '', '李调度', now);
+            if (result) {
+              Taro.showToast({ title: '已关闭', icon: 'success' });
+              refreshData();
+              reloadData();
+            }
+          } catch (error) {
+            console.error('[ExceptionDetailPage] 关闭异常失败:', error);
+            Taro.showToast({ title: '操作失败', icon: 'none' });
+          }
         }
       }
     });
@@ -119,11 +152,31 @@ const ExceptionDetailPage: React.FC = () => {
     }
     Taro.showLoading({ title: '提交中...' });
     setTimeout(() => {
-      Taro.hideLoading();
-      Taro.showToast({ title: '处理成功', icon: 'success' });
-      setShowHandleForm(false);
-      setHandleResult('');
-    }, 1000);
+      try {
+        const now = getCurrentDateTime();
+        const result = exceptionService.process(
+          exceptionId || '',
+          '李调度',
+          handleResult.trim(),
+          now
+        );
+        Taro.hideLoading();
+        if (result) {
+          Taro.showToast({ title: '处理成功', icon: 'success' });
+          setShowHandleForm(false);
+          setHandleResult('');
+          refreshData();
+          reloadData();
+          console.log('[ExceptionDetailPage] 异常处理成功:', result);
+        } else {
+          Taro.showToast({ title: '处理失败', icon: 'none' });
+        }
+      } catch (error) {
+        Taro.hideLoading();
+        Taro.showToast({ title: '处理失败', icon: 'none' });
+        console.error('[ExceptionDetailPage] 异常处理失败:', error);
+      }
+    }, 800);
   };
 
   const handleViewVoyage = () => {
@@ -174,7 +227,7 @@ const ExceptionDetailPage: React.FC = () => {
           <View className={styles.typeTag}>
             {getTypeIcon(exception.type)} {typeConfig.text}
           </View>
-          <View className={styles.statusTag}>
+          <View className={classnames(styles.statusTag, styles[exception.status])}>
             {statusConfig.text}
           </View>
         </View>
@@ -213,6 +266,12 @@ const ExceptionDetailPage: React.FC = () => {
                 <Text className={styles.infoValue}>{formatDateTime(exception.handleTime || '')}</Text>
               </View>
             </>
+          )}
+          {exception.handleResult && (
+            <View className={styles.infoItem} style={{ width: '100%' }}>
+              <Text className={styles.infoLabel}>处理意见</Text>
+              <Text className={styles.infoValue} style={{ fontWeight: 400 }}>{exception.handleResult}</Text>
+            </View>
           )}
         </View>
       </View>

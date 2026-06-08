@@ -349,3 +349,137 @@
     color: $color-text-tertiary;
   }
 }
+
+.tabBar {
+  display: flex;
+  margin: 0 $page-padding $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: 8rpx;
+  box-shadow: $shadow-card;
+
+  .tabItem {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80rpx;
+    border-radius: $radius-md;
+    position: relative;
+
+    .tabText {
+      font-size: $font-size-md;
+      color: $color-text-secondary;
+      font-weight: $font-weight-medium;
+    }
+
+    .tabBadge {
+      position: absolute;
+      top: 8rpx;
+      right: 40rpx;
+      min-width: 36rpx;
+      height: 36rpx;
+      padding: 0 8rpx;
+      border-radius: $radius-round;
+      background: $color-error;
+      color: $color-text-white;
+      font-size: $font-size-xs;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    &.active {
+      background: $color-primary;
+
+      .tabText {
+        color: $color-text-white;
+      }
+
+      .tabBadge {
+        background: $color-text-white;
+        color: $color-error;
+      }
+    }
+  }
+}
+
+.content {
+  padding: 0 $page-padding;
+}
+
+.recordList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.recordItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  background: $color-bg-page;
+  border-radius: $radius-lg;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+
+  .recordIcon {
+    font-size: 64rpx;
+    margin-right: $spacing-md;
+    flex-shrink: 0;
+  }
+
+  .recordInfo {
+    flex: 1;
+    min-width: 0;
+
+    .recordName {
+      font-size: $font-size-md;
+      color: $color-text-primary;
+      font-weight: $font-weight-medium;
+      margin-bottom: $spacing-xs;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .recordMeta {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      margin-bottom: $spacing-xs;
+    }
+
+    .recordTime {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+  }
+
+  .recordStatus {
+    flex-shrink: 0;
+    padding: 8rpx 20rpx;
+    border-radius: $radius-round;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+
+    &.pending {
+      background: rgba(245, 63, 63, 0.1);
+      color: $color-error;
+    }
+
+    &.completed {
+      background: rgba(0, 180, 42, 0.1);
+      color: $color-success;
+    }
+
+    &.failed {
+      background: rgba(134, 144, 156, 0.1);
+      color: $color-text-secondary;
+    }
+  }
+}
