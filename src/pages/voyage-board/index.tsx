@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, Input, Picker } from '@tarojs/components';
+import { View, Text, ScrollView, Input, Picker, Textarea, Button } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
@@ -11,6 +11,7 @@ import {
   oilWaterSupplyService,
   exceptionService,
   messageService,
+  messageReceiptService,
   onDataChange,
   getCurrentDateTime
 } from '@/services/dataService';
@@ -20,7 +21,7 @@ import {
   formatDate,
   formatWeight
 } from '@/utils/format';
-import type { Voyage, Ship, VoyageBoardSummary } from '@/types';
+import type { Voyage, Ship, VoyageBoardSummary, Exception } from '@/types';
 
 const shipFilterOptions = [
   { key: 'all', label: '全部船舶' },
@@ -53,6 +54,11 @@ const VoyageBoardPage: React.FC = () => {
   const [exceptionStatusFilter, setExceptionStatusFilter] = useState('all');
   const [selectedVoyageId, setSelectedVoyageId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [exceptionTab, setExceptionTab] = useState('all');
+  const [showExceptionModal, setShowExceptionModal] = useState(false);
+  const [selectedException, setSelectedException] = useState<Exception | null>(null);
+  const [handleResult, setHandleResult] = useState('');
+  const [handleAction, setHandleAction] = useState<'start' | 'resolve' | 'close'>('start');
 
   const reloadData = useCallback(() => {
     setDataVersion(v => v + 1);
@@ -141,6 +147,22 @@ const VoyageBoardPage: React.FC = () => {
     return messageService.getByType('all').filter(m => m.voyageId === selectedVoyageId);
   }, [selectedVoyageId, dataVersion]);
 
+  const groupedExceptions = useMemo(() => {
+    if (!selectedVoyageId) return { all: [], pending: [], processing: [], resolved: [] };
+    
+    const all = exceptionService.getByVoyageId(selectedVoyageId);
+    return {
+      all,
+      pending: all.filter(e => e.status === 'pending'),
+      processing: all.filter(e => e.status === 'processing'),
+      resolved: all.filter(e => e.status === 'resolved' || e.status === 'closed')
+    };
+  }, [selectedVoyageId, dataVersion]);
+
+  const displayedExceptions = useMemo(() => {
+    return groupedExceptions[exceptionTab as keyof typeof groupedExceptions] || [];
+  }, [groupedExceptions, exceptionTab]);
+
   const handleVoyageClick = (voyage: Voyage) => {
     setSelectedVoyageId(voyage.id);
   };
@@ -157,6 +179,56 @@ const VoyageBoardPage: React.FC = () => {
       message: '/pages/message/index'
     };
     Taro.navigateTo({ url: urls[page] });
+  };
+
+  const handleExceptionClick = (exception: Exception) => {
+    if (exception.status === 'pending' || exception.status === 'processing') {
+      setSelectedException(exception);
+      setHandleResult(exception.handleResult || '');
+      if (exception.status === 'pending') {
+        setHandleAction('start');
+      } else {
+        setHandleAction('resolve');
+      }
+      setShowExceptionModal(true);
+    } else {
+      handleViewDetail('exception', exception.id);
+    }
+  };
+
+  const handleProcessException = () => {
+    if (!selectedException) return;
+    
+    const handler = state.userRole === 'dispatcher' ? '李调度' : '张船长';
+    const now = getCurrentDateTime();
+
+    if (handleAction === 'start') {
+      exceptionService.startProcessing(selectedException.id, handler);
+      Taro.showToast({ title: '已开始处理', icon: 'success' });
+    } else if (handleAction === 'resolve') {
+      if (!handleResult.trim()) {
+        Taro.showToast({ title: '请填写处理意见', icon: 'none' });
+        return;
+      }
+      exceptionService.resolveException(selectedException.id, handleResult, handler);
+      Taro.showToast({ title: '已标记解决', icon: 'success' });
+    } else if (handleAction === 'close') {
+      if (!handleResult.trim()) {
+        Taro.showToast({ title: '请填写关闭原因', icon: 'none' });
+        return;
+      }
+      exceptionService.closeException(selectedException.id, handleResult, handler);
+      Taro.showToast({ title: '已关闭异常', icon: 'success' });
+    }
+
+    setShowExceptionModal(false);
+    setSelectedException(null);
+    setHandleResult('');
+    reloadData();
+  };
+
+  const getMessageReceipts = (messageId: string) => {
+    return messageReceiptService.getByMessageId(messageId);
   };
 
   const getTypeIcon = (type: string): string => {
@@ -299,7 +371,7 @@ const VoyageBoardPage: React.FC = () => {
 
         <View className={styles.section}>
           <View className={styles.sectionHeader}>
-            <Text className={styles.sectionTitle}>⚠️ 异常记录</Text>
+            <Text className={styles.sectionTitle}>⚠️ 异常处理跟进</Text>
             <Text 
               className={styles.sectionAction} 
               onClick={() => handleViewDetail('exception')}
@@ -307,16 +379,48 @@ const VoyageBoardPage: React.FC = () => {
               查看全部 →
             </Text>
           </View>
-          {selectedExceptions.length === 0 ? (
+          
+          <View className={styles.exceptionTabs}>
+            <View 
+              className={classnames(styles.tabItem, exceptionTab === 'all' && styles.active)}
+              onClick={() => setExceptionTab('all')}
+            >
+              <Text className={styles.tabText}>全部</Text>
+              <Text className={styles.tabCount}>{groupedExceptions.all.length}</Text>
+            </View>
+            <View 
+              className={classnames(styles.tabItem, exceptionTab === 'pending' && styles.active)}
+              onClick={() => setExceptionTab('pending')}
+            >
+              <Text className={styles.tabText}>待处理</Text>
+              <Text className={styles.tabCount}>{groupedExceptions.pending.length}</Text>
+            </View>
+            <View 
+              className={classnames(styles.tabItem, exceptionTab === 'processing' && styles.active)}
+              onClick={() => setExceptionTab('processing')}
+            >
+              <Text className={styles.tabText}>处理中</Text>
+              <Text className={styles.tabCount}>{groupedExceptions.processing.length}</Text>
+            </View>
+            <View 
+              className={classnames(styles.tabItem, exceptionTab === 'resolved' && styles.active)}
+              onClick={() => setExceptionTab('resolved')}
+            >
+              <Text className={styles.tabText}>已解决</Text>
+              <Text className={styles.tabCount}>{groupedExceptions.resolved.length}</Text>
+            </View>
+          </View>
+          
+          {displayedExceptions.length === 0 ? (
             <View className={styles.emptyState}>
-              <Text>暂无异常记录</Text>
+              <Text>暂无{exceptionTab === 'all' ? '异常' : exceptionTab === 'pending' ? '待处理' : exceptionTab === 'processing' ? '处理中' : '已解决'}异常记录</Text>
             </View>
           ) : (
-            selectedExceptions.map(exp => (
+            displayedExceptions.map(exp => (
               <View 
                 key={exp.id} 
-                className={styles.recordCard}
-                onClick={() => handleViewDetail('exception', exp.id)}
+                className={styles.exceptionCard}
+                onClick={() => handleExceptionClick(exp)}
               >
                 <View className={styles.recordIcon}>{getTypeIcon(exp.type)}</View>
                 <View className={styles.recordInfo}>
@@ -332,11 +436,18 @@ const VoyageBoardPage: React.FC = () => {
                     </Text>
                   )}
                 </View>
-                <View className={classnames(
-                  styles.recordStatus,
-                  styles[`exp_${exp.status}`]
-                )}>
-                  {exp.statusText}
+                <View className={styles.exceptionActions}>
+                  <View className={classnames(
+                    styles.recordStatus,
+                    styles[`exp_${exp.status}`]
+                  )}>
+                    {exp.statusText}
+                  </View>
+                  {(exp.status === 'pending' || exp.status === 'processing') && (
+                    <Text className={styles.processBtn}>
+                      {exp.status === 'pending' ? '处理' : '跟进'}
+                    </Text>
+                  )}
                 </View>
               </View>
             ))
@@ -345,7 +456,7 @@ const VoyageBoardPage: React.FC = () => {
 
         <View className={styles.section}>
           <View className={styles.sectionHeader}>
-            <Text className={styles.sectionTitle}>📨 消息记录</Text>
+            <Text className={styles.sectionTitle}>📨 消息记录与回执</Text>
             <Text 
               className={styles.sectionAction} 
               onClick={() => handleViewDetail('message')}
@@ -358,25 +469,146 @@ const VoyageBoardPage: React.FC = () => {
               <Text>暂无相关消息</Text>
             </View>
           ) : (
-            selectedMessages.slice(0, 3).map(msg => (
-              <View key={msg.id} className={styles.recordCard}>
-                <View className={styles.recordIcon}>{getTypeIcon(msg.type)}</View>
-                <View className={styles.recordInfo}>
-                  <Text className={styles.recordTitle}>{msg.title}</Text>
-                  <Text className={styles.recordDesc}>
-                    发送人: {msg.sender} | {msg.createTime}
-                  </Text>
+            selectedMessages.map(msg => {
+              const receipts = getMessageReceipts(msg.id);
+              return (
+                <View key={msg.id} className={styles.messageCard}>
+                  <View className={styles.messageHeader}>
+                    <View className={styles.recordIcon}>{getTypeIcon(msg.type)}</View>
+                    <View className={styles.messageInfo}>
+                      <Text className={styles.recordTitle}>{msg.title}</Text>
+                      <Text className={styles.recordDesc}>
+                        发送人: {msg.sender} | {msg.createTime}
+                      </Text>
+                    </View>
+                    <View className={classnames(
+                      styles.recordStatus,
+                      msg.isRead ? styles.read : styles.unread
+                    )}>
+                      {msg.isRead ? '已读' : '未读'}
+                    </View>
+                  </View>
+                  
+                  {msg.type === 'dispatch' && receipts.length > 0 && (
+                    <View className={styles.receiptSection}>
+                      <Text className={styles.receiptTitle}>确认回执 ({receipts.length}人)</Text>
+                      <View className={styles.receiptList}>
+                        {receipts.map(receipt => (
+                          <View key={receipt.id} className={styles.receiptItem}>
+                            <Text className={styles.receiptName}>👤 {receipt.receiverName}</Text>
+                            <Text className={styles.receiptTime}>{receipt.confirmTime}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
                 </View>
-                <View className={classnames(
-                  styles.recordStatus,
-                  msg.isRead ? styles.read : styles.unread
-                )}>
-                  {msg.isRead ? '已读' : '未读'}
-                </View>
-              </View>
-            ))
+              );
+            })
           )}
         </View>
+
+        {showExceptionModal && selectedException && (
+          <View className={styles.modalOverlay} onClick={() => setShowExceptionModal(false)}>
+            <View className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <View className={styles.modalHeader}>
+                <Text className={styles.modalTitle}>异常处理</Text>
+                <Text className={styles.modalClose} onClick={() => setShowExceptionModal(false)}>×</Text>
+              </View>
+              
+              <ScrollView className={styles.modalBody} scrollY>
+                <View className={styles.exceptionInfo}>
+                  <View className={styles.exceptionInfoRow}>
+                    <Text className={styles.exceptionInfoLabel}>异常标题</Text>
+                    <Text className={styles.exceptionInfoValue}>{selectedException.title}</Text>
+                  </View>
+                  <View className={styles.exceptionInfoRow}>
+                    <Text className={styles.exceptionInfoLabel}>异常类型</Text>
+                    <Text className={styles.exceptionInfoValue}>{selectedException.typeText}</Text>
+                  </View>
+                  <View className={styles.exceptionInfoRow}>
+                    <Text className={styles.exceptionInfoLabel}>发生位置</Text>
+                    <Text className={styles.exceptionInfoValue}>{selectedException.location}</Text>
+                  </View>
+                  <View className={styles.exceptionInfoRow}>
+                    <Text className={styles.exceptionInfoLabel}>发生时间</Text>
+                    <Text className={styles.exceptionInfoValue}>{selectedException.occurrenceTime}</Text>
+                  </View>
+                  <View className={styles.exceptionInfoRow}>
+                    <Text className={styles.exceptionInfoLabel}>异常描述</Text>
+                    <Text className={styles.exceptionInfoValue}>{selectedException.description}</Text>
+                  </View>
+                  <View className={styles.exceptionInfoRow}>
+                    <Text className={styles.exceptionInfoLabel}>当前状态</Text>
+                    <View className={classnames(
+                      styles.recordStatus,
+                      styles[`exp_${selectedException.status}`]
+                    )}>
+                      {selectedException.statusText}
+                    </View>
+                  </View>
+                  {selectedException.handler && (
+                    <View className={styles.exceptionInfoRow}>
+                      <Text className={styles.exceptionInfoLabel}>处理人</Text>
+                      <Text className={styles.exceptionInfoValue}>{selectedException.handler}</Text>
+                    </View>
+                  )}
+                </View>
+
+                <View className={styles.actionTabs}>
+                  {selectedException.status === 'pending' && (
+                    <View 
+                      className={classnames(styles.actionTab, handleAction === 'start' && styles.active)}
+                      onClick={() => setHandleAction('start')}
+                    >
+                      <Text>开始处理</Text>
+                    </View>
+                  )}
+                  {(selectedException.status === 'pending' || selectedException.status === 'processing') && (
+                    <View 
+                      className={classnames(styles.actionTab, handleAction === 'resolve' && styles.active)}
+                      onClick={() => setHandleAction('resolve')}
+                    >
+                      <Text>标记解决</Text>
+                    </View>
+                  )}
+                  {(selectedException.status === 'pending' || selectedException.status === 'processing' || selectedException.status === 'resolved') && (
+                    <View 
+                      className={classnames(styles.actionTab, handleAction === 'close' && styles.active)}
+                      onClick={() => setHandleAction('close')}
+                    >
+                      <Text>关闭异常</Text>
+                    </View>
+                  )}
+                </View>
+
+                {handleAction !== 'start' && (
+                  <View className={styles.formSection}>
+                    <Text className={styles.formLabel}>
+                      {handleAction === 'resolve' ? '处理意见' : '关闭原因'} <Text className={styles.required}>*</Text>
+                    </Text>
+                    <Textarea
+                      className={styles.formTextarea}
+                      placeholder={`请输入${handleAction === 'resolve' ? '处理意见' : '关闭原因'}`}
+                      value={handleResult}
+                      onInput={(e) => setHandleResult(e.detail.value)}
+                      maxlength={500}
+                    />
+                  </View>
+                )}
+              </ScrollView>
+              
+              <View className={styles.modalFooter}>
+                <Button className={styles.modalBtnSecondary} onClick={() => setShowExceptionModal(false)}>
+                  取消
+                </Button>
+                <Button className={styles.modalBtnPrimary} onClick={handleProcessException}>
+                  {handleAction === 'start' ? '开始处理' : handleAction === 'resolve' ? '确认解决' : '确认关闭'}
+                </Button>
+              </View>
+            </View>
+          </View>
+        )}
 
         <View className={styles.footerPadding} />
       </ScrollView>

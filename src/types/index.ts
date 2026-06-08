@@ -181,6 +181,48 @@ export interface TimeLineItem {
   status: 'completed' | 'current' | 'pending';
 }
 
+export interface ArrivalConfirmation {
+  id: string;
+  voyageId: string;
+  shipId: string;
+  shipName: string;
+  port: string;
+  portType: 'loading' | 'unloading';
+  arrivalTime: string;
+  draft: number;
+  waterDepth: number;
+  pilotOnBoard: boolean;
+  tugUsed: boolean;
+  remark?: string;
+  operator: string;
+  confirmTime: string;
+  photos: string[];
+}
+
+export interface MessageReceipt {
+  id: string;
+  messageId: string;
+  receiverId: string;
+  receiverName: string;
+  voyageId?: string;
+  confirmTime: string;
+  remark?: string;
+}
+
+export interface ExportTemplate {
+  id: string;
+  name: string;
+  format: 'excel' | 'pdf' | 'csv';
+  formatText: string;
+  contents: string[];
+  voyageStatusFilter: string[];
+  isDefault: boolean;
+  createTime: string;
+  updateTime: string;
+  operator: string;
+  useCount: number;
+}
+
 export interface ExportRecord {
   id: string;
   fileName: string;
@@ -190,6 +232,8 @@ export interface ExportRecord {
   totalWeight: number;
   contents: string[];
   voyageIds: string[];
+  templateId?: string;
+  templateName?: string;
   status: 'pending' | 'completed' | 'failed';
   statusText: string;
   fileUrl?: string;

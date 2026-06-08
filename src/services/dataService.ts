@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro';
 import { BaseStorageService, generateId, getCurrentDateTime, getCurrentDate } from './storage';
-import { mockLoadingRecords, mockOilWaterSupplies, mockExceptions, mockMessages } from '@/data';
+import { mockLoadingRecords, mockOilWaterSupplies, mockExceptions, mockMessages, mockShipDynamics } from '@/data';
 import { mockVoyages } from '@/data/voyage';
 import type {
   LoadingRecord,
@@ -8,6 +8,10 @@ import type {
   Exception,
   Message,
   ExportRecord,
+  ExportTemplate,
+  ArrivalConfirmation,
+  MessageReceipt,
+  ShipDynamic,
   Voyage
 } from '@/types';
 
@@ -247,11 +251,136 @@ class ExportRecordService extends BaseStorageService<ExportRecord> {
   }
 }
 
+class ShipDynamicService extends BaseStorageService<ShipDynamic> {
+  constructor() {
+    super('wt_ship_dynamics', mockShipDynamics);
+  }
+
+  public getByVoyageId(voyageId: string): ShipDynamic[] {
+    return this.filter(d => d.voyageId === voyageId);
+  }
+
+  public getLatestByVoyageId(voyageId: string): ShipDynamic | undefined {
+    const list = this.getByVoyageId(voyageId);
+    return list.length > 0 ? list[0] : undefined;
+  }
+
+  public addDynamic(dynamic: Omit<ShipDynamic, 'id' | 'updateTime'>): ShipDynamic {
+    const now = getCurrentDateTime();
+    const newDynamic: ShipDynamic = {
+      ...dynamic,
+      id: generateId('dyn'),
+      updateTime: now
+    };
+    return this.add(newDynamic);
+  }
+}
+
+class ArrivalConfirmationService extends BaseStorageService<ArrivalConfirmation> {
+  constructor() {
+    super('wt_arrival_confirmations', []);
+  }
+
+  public getByVoyageId(voyageId: string): ArrivalConfirmation[] {
+    return this.filter(c => c.voyageId === voyageId);
+  }
+
+  public getLatestByVoyageId(voyageId: string): ArrivalConfirmation | undefined {
+    const list = this.getByVoyageId(voyageId);
+    return list.length > 0 ? list[0] : undefined;
+  }
+
+  public addConfirmation(confirmation: Omit<ArrivalConfirmation, 'id' | 'confirmTime'>): ArrivalConfirmation {
+    const now = getCurrentDateTime();
+    const newConfirmation: ArrivalConfirmation = {
+      ...confirmation,
+      id: generateId('arr'),
+      confirmTime: now
+    };
+    return this.add(newConfirmation);
+  }
+}
+
+class MessageReceiptService extends BaseStorageService<MessageReceipt> {
+  constructor() {
+    super('wt_message_receipts', []);
+  }
+
+  public getByMessageId(messageId: string): MessageReceipt[] {
+    return this.filter(r => r.messageId === messageId);
+  }
+
+  public getByVoyageId(voyageId: string): MessageReceipt[] {
+    return this.filter(r => r.voyageId === voyageId);
+  }
+
+  public getReadCountByMessageId(messageId: string): number {
+    return this.getByMessageId(messageId).length;
+  }
+
+  public addReceipt(receipt: Omit<MessageReceipt, 'id' | 'confirmTime'>): MessageReceipt {
+    const now = getCurrentDateTime();
+    const newReceipt: MessageReceipt = {
+      ...receipt,
+      id: generateId('rcpt'),
+      confirmTime: now
+    };
+    return this.add(newReceipt);
+  }
+}
+
+class ExportTemplateService extends BaseStorageService<ExportTemplate> {
+  constructor() {
+    super('wt_export_templates', []);
+  }
+
+  public getDefault(): ExportTemplate | undefined {
+    return this.find(t => t.isDefault);
+  }
+
+  public incrementUseCount(templateId: string): ExportTemplate | undefined {
+    const template = this.getById(templateId);
+    if (template) {
+      return this.update(templateId, {
+        useCount: template.useCount + 1,
+        updateTime: getCurrentDateTime()
+      });
+    }
+    return undefined;
+  }
+
+  public setDefault(templateId: string): void {
+    const all = this.getAll();
+    const updated = all.map(t => ({
+      ...t,
+      isDefault: t.id === templateId
+    }));
+    Taro.setStorageSync(this.storageKey, updated);
+    refreshData();
+  }
+
+  public createTemplate(template: Omit<ExportTemplate, 'id' | 'createTime' | 'updateTime' | 'useCount'>): ExportTemplate {
+    const now = getCurrentDateTime();
+    const newTemplate: ExportTemplate = {
+      ...template,
+      id: generateId('tpl'),
+      createTime: now,
+      updateTime: now,
+      useCount: 0
+    };
+    return this.add(newTemplate);
+  }
+}
+
 export const loadingRecordService = new LoadingRecordService();
 export const oilWaterSupplyService = new OilWaterSupplyService();
 export const exceptionService = new ExceptionService();
 export const messageService = new MessageService();
 export const exportRecordService = new ExportRecordService();
+export const shipDynamicService = new ShipDynamicService();
+export const arrivalConfirmationService = new ArrivalConfirmationService();
+export const messageReceiptService = new MessageReceiptService();
+export const exportTemplateService = new ExportTemplateService();
 
 export const refreshData = (): void => {
   Taro.eventCenter.trigger(DATA_CHANGE_EVENT);

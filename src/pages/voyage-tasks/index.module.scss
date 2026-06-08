@@ -323,6 +323,121 @@
   border-radius: 12rpx;
 }
 
+.arrivalModalContent {
+  background-color: #FFFFFF;
+  border-radius: 20rpx;
+  width: 100%;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.arrivalInfo {
+  background-color: #F0F7FF;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.arrivalInfoText {
+  display: block;
+  font-size: 26rpx;
+  color: #0066CC;
+  line-height: 1.8;
+  font-weight: 500;
+}
+
+.formSection {
+  margin-bottom: 24rpx;
+}
+
+.formRow {
+  display: flex;
+  gap: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.formSectionInline {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  background-color: #F7F8FA;
+  border-radius: 12rpx;
+}
+
+.formLabel {
+  display: block;
+  font-size: 26rpx;
+  color: #1D2129;
+  font-weight: 500;
+  margin-bottom: 12rpx;
+}
+
+.required {
+  color: #F53F3F;
+}
+
+.formInput {
+  width: 100%;
+  height: 80rpx;
+  padding: 0 24rpx;
+  background-color: #F7F8FA;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #1D2129;
+  border: none;
+  box-sizing: border-box;
+}
+
+.photoPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.previewImage {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 8rpx;
+}
+
+.modalFooter {
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid #F2F3F5;
+  display: flex;
+  gap: 24rpx;
+}
+
+.modalBtnSecondary {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background-color: #F7F8FA;
+  color: #4E5969;
+  font-size: 30rpx;
+  font-weight: 500;
+  border-radius: 12rpx;
+  border: none;
+}
+
+.modalBtnPrimary {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+  color: #FFFFFF;
+  font-size: 30rpx;
+  font-weight: 600;
+  border-radius: 12rpx;
+  border: none;
+}
+
 .footerPadding {
   height: 40rpx;
 }

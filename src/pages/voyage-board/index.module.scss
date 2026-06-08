@@ -375,6 +375,306 @@
   flex-shrink: 0;
 }
 
+.exceptionTabs {
+  display: flex;
+  background-color: #F7F8FA;
+  border-radius: 12rpx;
+  padding: 8rpx;
+  margin-bottom: 24rpx;
+  gap: 8rpx;
+}
+
+.tabItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16rpx 8rpx;
+  border-radius: 8rpx;
+  transition: all 0.2s ease;
+
+  &.active {
+    background-color: #FFFFFF;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  }
+}
+
+.tabText {
+  font-size: 24rpx;
+  color: #86909C;
+  margin-bottom: 4rpx;
+
+  .active & {
+    color: #0066CC;
+    font-weight: 600;
+  }
+}
+
+.tabCount {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1D2129;
+
+  .active & {
+    color: #0066CC;
+  }
+}
+
+.exceptionCard {
+  display: flex;
+  align-items: flex-start;
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  gap: 16rpx;
+}
+
+.exceptionActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.processBtn {
+  padding: 8rpx 20rpx;
+  background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+  color: #FFFFFF;
+  font-size: 24rpx;
+  font-weight: 500;
+  border-radius: 20rpx;
+}
+
+.messageCard {
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.messageHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.messageInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.receiptSection {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #F2F3F5;
+}
+
+.receiptTitle {
+  display: block;
+  font-size: 24rpx;
+  color: #86909C;
+  margin-bottom: 12rpx;
+}
+
+.receiptList {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.receiptItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 16rpx;
+  background-color: #F7F8FA;
+  border-radius: 8rpx;
+}
+
+.receiptName {
+  font-size: 24rpx;
+  color: #1D2129;
+  font-weight: 500;
+}
+
+.receiptTime {
+  font-size: 22rpx;
+  color: #86909C;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 40rpx;
+}
+
+.modalContent {
+  background-color: #FFFFFF;
+  border-radius: 20rpx;
+  width: 100%;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx;
+  border-bottom: 1rpx solid #F2F3F5;
+}
+
+.modalTitle {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1D2129;
+}
+
+.modalClose {
+  font-size: 48rpx;
+  color: #86909C;
+  line-height: 1;
+}
+
+.modalBody {
+  padding: 32rpx;
+  max-height: 60vh;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.exceptionInfo {
+  background-color: #F7F8FA;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.exceptionInfoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.exceptionInfoLabel {
+  font-size: 24rpx;
+  color: #86909C;
+  flex-shrink: 0;
+  width: 140rpx;
+}
+
+.exceptionInfoValue {
+  font-size: 24rpx;
+  color: #1D2129;
+  flex: 1;
+  text-align: right;
+  line-height: 1.5;
+}
+
+.actionTabs {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.actionTab {
+  flex: 1;
+  padding: 20rpx;
+  background-color: #F7F8FA;
+  border-radius: 12rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #4E5969;
+  transition: all 0.2s ease;
+
+  &.active {
+    background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+    color: #FFFFFF;
+    font-weight: 500;
+  }
+}
+
+.formSection {
+  margin-bottom: 24rpx;
+}
+
+.formLabel {
+  display: block;
+  font-size: 26rpx;
+  color: #1D2129;
+  font-weight: 500;
+  margin-bottom: 12rpx;
+}
+
+.required {
+  color: #F53F3F;
+}
+
+.formTextarea {
+  width: 100%;
+  min-height: 160rpx;
+  padding: 20rpx;
+  background-color: #F7F8FA;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #1D2129;
+  border: none;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+.modalFooter {
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid #F2F3F5;
+  display: flex;
+  gap: 24rpx;
+}
+
+.modalBtnSecondary {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background-color: #F7F8FA;
+  color: #4E5969;
+  font-size: 30rpx;
+  font-weight: 500;
+  border-radius: 12rpx;
+  border: none;
+}
+
+.modalBtnPrimary {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+  color: #FFFFFF;
+  font-size: 30rpx;
+  font-weight: 600;
+  border-radius: 12rpx;
+  border: none;
+}
+
 .footerPadding {
   height: 40rpx;
 }

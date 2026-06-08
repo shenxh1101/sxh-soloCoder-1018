@@ -1,20 +1,23 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView } from '@tarojs/components';
+import { View, Text, ScrollView, Input, Button, Switch, Image } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useApp } from '@/store/AppContext';
-import { mockVoyages } from '@/data/voyage';
+import { mockVoyages, mockShips } from '@/data/voyage';
 import {
   loadingRecordService,
   oilWaterSupplyService,
   exceptionService,
+  shipDynamicService,
+  arrivalConfirmationService,
   messageService,
   onDataChange,
   getCurrentDateTime
 } from '@/services/dataService';
 import { formatDateTime } from '@/utils/format';
-import type { Voyage, VoyageTask, VoyageTaskType, LoadingRecord, OilWaterSupply, Exception } from '@/types';
+import type { 
+  Voyage, VoyageTask, VoyageTaskType, LoadingRecord, OilWaterSupply, Exception, ShipDynamic, ArrivalConfirmation } from '@/types';
 
 const VoyageTasksPage: React.FC = () => {
   const { state } = useApp();
@@ -22,6 +25,15 @@ const VoyageTasksPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTask, setSelectedTask] = useState<VoyageTask | null>(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [showArrivalModal, setShowArrivalModal] = useState(false);
+  const [arrivalForm, setArrivalForm] = useState({
+    draft: '',
+    waterDepth: '',
+    pilotOnBoard: false,
+    tugUsed: false,
+    remark: '',
+    photos: [] as string[]
+  });
 
   const currentVoyage = useMemo(() => {
     const activeVoyages = mockVoyages.filter(v => 
@@ -57,25 +69,42 @@ const VoyageTasksPage: React.FC = () => {
     const loadingRecords = loadingRecordService.getByVoyageId(currentVoyage.id);
     const supplies = oilWaterSupplyService.getByVoyageId(currentVoyage.id);
     const exceptions = exceptionService.getByVoyageId(currentVoyage.id);
+    const latestDynamic = shipDynamicService.getLatestByVoyageId(currentVoyage.id);
+    const arrivalConfirmations = arrivalConfirmationService.getByVoyageId(currentVoyage.id);
     
     const confirmedLoading = loadingRecords.filter(r => r.status === 'confirmed');
     const pendingLoading = loadingRecords.filter(r => r.status === 'pending');
     
     const taskList: VoyageTask[] = [];
     
-    taskList.push({
-      id: `task_dynamic_${currentVoyage.id}`,
-      voyageId: currentVoyage.id,
-      type: 'dynamic',
-      typeText: '更新动态',
-      title: '更新船舶动态',
-      description: '每4小时更新一次位置、航速和航行状态',
-      status: 'completed',
-      statusText: '已完成',
-      submitTime: '2026-06-08 08:00',
-      submitter: '张船长',
-      required: true
-    });
+    if (latestDynamic) {
+      taskList.push({
+        id: `task_dynamic_${currentVoyage.id}`,
+        voyageId: currentVoyage.id,
+        type: 'dynamic',
+        typeText: '更新动态',
+        title: '更新船舶动态',
+        description: `最新位置: ${latestDynamic.positionText} | 航速: ${latestDynamic.speed}节 | 天气: ${latestDynamic.weather}`,
+        status: 'completed',
+        statusText: '已完成',
+        submitTime: latestDynamic.updateTime,
+        submitter: latestDynamic.remark || '张船长',
+        relatedRecordId: latestDynamic.id,
+        required: true
+      });
+    } else {
+      taskList.push({
+        id: `task_dynamic_${currentVoyage.id}`,
+        voyageId: currentVoyage.id,
+        type: 'dynamic',
+        typeText: '更新动态',
+        title: '更新船舶动态',
+        description: '每4小时更新一次位置、航速和航行状态',
+        status: 'pending',
+        statusText: '待更新',
+        required: true
+      });
+    }
     
     if (confirmedLoading.length > 0) {
       confirmedLoading.forEach(record => {
@@ -151,7 +180,25 @@ const VoyageTasksPage: React.FC = () => {
       });
     }
     
-    taskList.push({
+    if (arrivalConfirmations.length > 0) {
+      arrivalConfirmations.forEach(conf => {
+        taskList.push({
+          id: `task_arrival_${conf.id}`,
+          voyageId: currentVoyage.id,
+          type: 'arrival',
+          typeText: '到港确认',
+          title: `${conf.portType === 'loading' ? '装货港' : '卸货港'}到港确认 - ${conf.port}`,
+          description: `吃水: ${conf.draft}m | 水深: ${conf.waterDepth}m | ${conf.pilotOnBoard ? '有引航员' : '无引航员'}`,
+          status: 'completed',
+          statusText: '已确认',
+          submitTime: conf.confirmTime,
+          submitter: conf.operator,
+          relatedRecordId: conf.id,
+          required: true
+        });
+      });
+    } else {
+      taskList.push({
       id: `task_arrival_${currentVoyage.id}`,
       voyageId: currentVoyage.id,
       type: 'arrival',
@@ -162,6 +209,7 @@ const VoyageTasksPage: React.FC = () => {
       statusText: '待确认',
       required: true
     });
+    }
     
     const taskOrder: VoyageTaskType[] = ['dynamic', 'loading', 'supply', 'exception', 'arrival'];
     taskList.sort((a, b) => {
@@ -190,14 +238,18 @@ const VoyageTasksPage: React.FC = () => {
 
   const handleTaskClick = (task: VoyageTask) => {
     if (task.status === 'pending') {
-      const navigateMap: Record<VoyageTaskType, string> = {
-        dynamic: '/pages/ship/index',
-        loading: '/pages/loading/index',
-        supply: '/pages/loading/index',
-        exception: '/pages/exception/index',
-        arrival: '/pages/voyage/index'
-      };
-      Taro.navigateTo({ url: navigateMap[task.type] });
+      if (task.type === 'arrival') {
+        setShowArrivalModal(true);
+      } else {
+        const navigateMap: Record<VoyageTaskType, string> = {
+          dynamic: '/pages/ship/index',
+          loading: '/pages/loading/index',
+          supply: '/pages/loading/index',
+          exception: '/pages/exception/index',
+          arrival: '/pages/voyage/index'
+        };
+        Taro.navigateTo({ url: navigateMap[task.type] });
+      }
     } else {
       setSelectedTask(task);
       setShowDetail(true);
@@ -207,6 +259,49 @@ const VoyageTasksPage: React.FC = () => {
   const handleCloseDetail = () => {
     setShowDetail(false);
     setSelectedTask(null);
+  };
+
+  const handleCloseArrivalModal = () => {
+    setShowArrivalModal(false);
+    setArrivalForm({
+      draft: '',
+      waterDepth: '',
+      pilotOnBoard: false,
+      tugUsed: false,
+      remark: '',
+      photos: []
+    });
+  };
+
+  const handleSubmitArrival = () => {
+    if (!currentVoyage) return;
+    
+    if (!arrivalForm.draft || !arrivalForm.waterDepth) {
+      Taro.showToast({ title: '请填写吃水和水深', icon: 'none' });
+      return;
+    }
+
+    const ship = mockShips.find(s => s.currentVoyageId === currentVoyage.id);
+    
+    arrivalConfirmationService.addConfirmation({
+      voyageId: currentVoyage.id,
+      shipId: ship?.id || 's001',
+      shipName: ship?.name || currentVoyage.shipName,
+      port: currentVoyage.unloadingPort,
+      portType: 'unloading',
+      arrivalTime: getCurrentDateTime(),
+      draft: parseFloat(arrivalForm.draft),
+      waterDepth: parseFloat(arrivalForm.waterDepth),
+      pilotOnBoard: arrivalForm.pilotOnBoard,
+      tugUsed: arrivalForm.tugUsed,
+      remark: arrivalForm.remark,
+      operator: state.userRole === 'crew' ? '张船长' : '调度员',
+      photos: arrivalForm.photos
+    });
+
+    Taro.showToast({ title: '到港确认成功', icon: 'success' });
+    handleCloseArrivalModal();
+    reloadData();
   };
 
   const getTaskIcon = (type: VoyageTaskType): string => {
@@ -224,6 +319,12 @@ const VoyageTasksPage: React.FC = () => {
     if (!task.relatedRecordId) return '';
     
     switch (task.type) {
+      case 'dynamic':
+        const dynamic = shipDynamicService.getById(task.relatedRecordId) as ShipDynamic;
+        if (dynamic) {
+          return `位置: ${dynamic.positionText}\n纬度: ${dynamic.latitude}\n经度: ${dynamic.longitude}\n航向: ${dynamic.heading}°\n航速: ${dynamic.speed}节\n天气: ${dynamic.weather}\n风力: ${dynamic.windSpeed}级 ${dynamic.windDirection}\n浪高: ${dynamic.waveHeight}m\n${dynamic.remark ? `备注: ${dynamic.remark}` : ''}`;
+        }
+        break;
       case 'loading':
         const record = loadingRecordService.getById(task.relatedRecordId) as LoadingRecord;
         if (record) {
@@ -248,6 +349,12 @@ const VoyageTasksPage: React.FC = () => {
             detail += `\n处理意见: ${exp.handleResult}`;
           }
           return detail;
+        }
+        break;
+      case 'arrival':
+        const conf = arrivalConfirmationService.getById(task.relatedRecordId) as ArrivalConfirmation;
+        if (conf) {
+          return `港口: ${conf.port}\n到港时间: ${conf.arrivalTime}\n吃水: ${conf.draft}m\n水深: ${conf.waterDepth}m\n引航员: ${conf.pilotOnBoard ? '是' : '否'}\n拖船: ${conf.tugUsed ? '是' : '否'}\n${conf.remark ? `备注: ${conf.remark}` : ''}`;
         }
         break;
     }
@@ -408,6 +515,97 @@ const VoyageTasksPage: React.FC = () => {
               <Text className={styles.modalBtn} onClick={handleCloseDetail}>
                 关闭
               </Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {showArrivalModal && currentVoyage && (
+        <View className={styles.modalOverlay} onClick={handleCloseArrivalModal}>
+          <View className={styles.arrivalModalContent} onClick={(e) => e.stopPropagation()}>
+            <View className={styles.modalHeader}>
+              <Text className={styles.modalTitle}>到港确认</Text>
+              <Text className={styles.modalClose} onClick={handleCloseArrivalModal}>×</Text>
+            </View>
+            
+            <ScrollView className={styles.modalBody} scrollY>
+              <View className={styles.arrivalInfo}>
+                <Text className={styles.arrivalInfoText}>
+                  航次: {currentVoyage.voyageNo}
+                </Text>
+                <Text className={styles.arrivalInfoText}>
+                  港口: {currentVoyage.unloadingPort}
+                </Text>
+                <Text className={styles.arrivalInfoText}>
+                  预计到达: {currentVoyage.estimatedArrivalTime}
+                </Text>
+              </View>
+
+              <View className={styles.formSection}>
+                <Text className={styles.formLabel}>船舶吃水 (m) <Text className={styles.required}>*</Text></Text>
+                <Input
+                  className={styles.formInput}
+                  type="digit"
+                  placeholder="请输入吃水深度"
+                  value={arrivalForm.draft}
+                  onInput={(e) => setArrivalForm({ ...arrivalForm, draft: e.detail.value })}
+                />
+              </View>
+
+              <View className={styles.formSection}>
+                <Text className={styles.formLabel}>港池水深 (m) <Text className={styles.required}>*</Text></Text>
+                <Input
+                  className={styles.formInput}
+                  type="digit"
+                  placeholder="请输入港池水深"
+                  value={arrivalForm.waterDepth}
+                  onInput={(e) => setArrivalForm({ ...arrivalForm, waterDepth: e.detail.value })}
+                />
+              </View>
+
+              <View className={styles.formRow}>
+                <View className={styles.formSectionInline}>
+                  <Text className={styles.formLabel}>引航员在船</Text>
+                  <Switch
+                    checked={arrivalForm.pilotOnBoard}
+                    onChange={(e) => setArrivalForm({ ...arrivalForm, pilotOnBoard: e.detail.value })}
+                  />
+                </View>
+                <View className={styles.formSectionInline}>
+                  <Text className={styles.formLabel}>使用拖船</Text>
+                  <Switch
+                    checked={arrivalForm.tugUsed}
+                    onChange={(e) => setArrivalForm({ ...arrivalForm, tugUsed: e.detail.value })}
+                  />
+                </View>
+              </View>
+
+              <View className={styles.formSection}>
+                <Text className={styles.formLabel}>备注</Text>
+                <Input
+                  className={styles.formInput}
+                  placeholder="请输入备注信息"
+                  value={arrivalForm.remark}
+                  onInput={(e) => setArrivalForm({ ...arrivalForm, remark: e.detail.value })}
+                />
+              </View>
+
+              {arrivalForm.photos.length > 0 && (
+                <View className={styles.photoPreview}>
+                  {arrivalForm.photos.map((photo, index) => (
+                    <Image key={index} src={photo} className={styles.previewImage} />
+                  ))}
+                </View>
+              )}
+            </ScrollView>
+            
+            <View className={styles.modalFooter}>
+              <Button className={styles.modalBtnSecondary} onClick={handleCloseArrivalModal}>
+                取消
+              </Button>
+              <Button className={styles.modalBtnPrimary} onClick={handleSubmitArrival}>
+                确认到港
+              </Button>
             </View>
           </View>
         </View>
