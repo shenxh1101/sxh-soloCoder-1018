@@ -1,0 +1,43 @@
+// ============================================
+// 主题配色变量（水路运输 App）
+// ============================================
+
+// 品牌主题色：深海蓝，代表专业、信任、水运
+$color-primary: #0066CC;
+$color-primary-light: #3399FF;
+$color-primary-dark: #004C99;
+
+// 辅助色：青色，代表水运、活力
+$color-secondary: #00B4D8;
+$color-secondary-light: #48CAE4;
+
+// 功能色
+$color-success: #00B42A;
+$color-warning: #FF7D00;
+$color-error: #F53F3F;
+$color-info: #0066CC;
+
+// 业务状态色
+$color-status-sailing: #00B42A; // 在航
+$color-status-anchored: #FF7D00; // 锚泊
+$color-status-exception: #F53F3F; // 异常
+$color-status-completed: #0066CC; // 完成
+$color-status-pending: #86909C; // 待执行
+
+// 背景色
+$color-bg-page: #F0F7FF;
+$color-bg-card: #ffffff;
+$color-bg-hover: #E6F2FF;
+$color-bg-tag: rgba(0, 102, 204, 0.08);
+
+// 文本色
+$color-text-primary: #1D2129;
+$color-text-secondary: #4E5969;
+$color-text-tertiary: #86909C;
+$color-text-disabled: #C9CDD4;
+$color-text-white: #FFFFFF;
+
+// 边框色
+$color-border: #E5E6EB;
+$color-divider: #F2F3F5;
+$color-border-primary: rgba(0, 102, 204, 0.2);

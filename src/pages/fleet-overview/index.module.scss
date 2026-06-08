@@ -1,0 +1,389 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #E6F2FF 0%, $color-bg-page 100%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 40rpx);
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+
+  .title {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-xs;
+  }
+
+  .subtitle {
+    font-size: $font-size-md;
+    opacity: 0.9;
+  }
+}
+
+.statsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: $spacing-md $page-padding;
+  gap: $spacing-sm;
+  margin-top: -$spacing-lg;
+  position: relative;
+  z-index: 10;
+
+  .statCard {
+    width: calc(50% - #{$spacing-sm} / 2);
+    background: $color-bg-card;
+    border-radius: $radius-lg;
+    padding: $spacing-lg;
+    box-shadow: $shadow-card;
+
+    .statIcon {
+      font-size: 48rpx;
+      margin-bottom: $spacing-sm;
+    }
+
+    .statValue {
+      font-size: $font-size-xxl;
+      font-weight: $font-weight-bold;
+      color: $color-text-primary;
+      margin-bottom: 4rpx;
+    }
+
+    .statLabel {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+
+    &.sailing .statValue {
+      color: $color-success;
+    }
+
+    &.anchored .statValue {
+      color: $color-warning;
+    }
+
+    &.exception .statValue {
+      color: $color-error;
+    }
+
+    &.completed .statValue {
+      color: $color-primary;
+    }
+  }
+}
+
+.section {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+
+  .sectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-md;
+
+    .sectionTitle {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      display: flex;
+      align-items: center;
+
+      .titleIcon {
+        margin-right: $spacing-sm;
+        font-size: $font-size-xl;
+      }
+    }
+
+    .viewAll {
+      font-size: $font-size-sm;
+      color: $color-primary;
+    }
+  }
+}
+
+.shipList {
+  .shipItem {
+    display: flex;
+    align-items: center;
+    padding: $spacing-md 0;
+    border-bottom: 2rpx solid $color-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .shipIcon {
+      width: 80rpx;
+      height: 80rpx;
+      border-radius: $radius-round;
+      background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36rpx;
+      margin-right: $spacing-md;
+    }
+
+    .shipInfo {
+      flex: 1;
+
+      .shipName {
+        font-size: $font-size-md;
+        font-weight: $font-weight-medium;
+        color: $color-text-primary;
+        margin-bottom: 4rpx;
+      }
+
+      .shipVoyage {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        margin-bottom: 4rpx;
+      }
+
+      .shipRoute {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+      }
+    }
+
+    .shipStatus {
+      text-align: right;
+
+      .statusTag {
+        display: inline-flex;
+        align-items: center;
+        padding: 6rpx 20rpx;
+        border-radius: $radius-round;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        margin-bottom: 4rpx;
+
+        &.sailing {
+          background: rgba(0, 180, 42, 0.1);
+          color: $color-success;
+        }
+
+        &.anchored {
+          background: rgba(255, 125, 0, 0.1);
+          color: $color-warning;
+        }
+
+        &.docked {
+          background: rgba(0, 102, 204, 0.1);
+          color: $color-primary;
+        }
+
+        &.maintenance {
+          background: rgba(245, 63, 63, 0.1);
+          color: $color-error;
+        }
+      }
+
+      .shipSpeed {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+      }
+    }
+  }
+}
+
+.voyageList {
+  .voyageItem {
+    display: flex;
+    align-items: center;
+    padding: $spacing-md 0;
+    border-bottom: 2rpx solid $color-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .voyageInfo {
+      flex: 1;
+
+      .voyageNo {
+        font-size: $font-size-md;
+        font-weight: $font-weight-medium;
+        color: $color-text-primary;
+        margin-bottom: 4rpx;
+      }
+
+      .voyageRoute {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        margin-bottom: 4rpx;
+      }
+
+      .voyageProgress {
+        display: flex;
+        align-items: center;
+        margin-top: $spacing-xs;
+
+        .progressBar {
+          flex: 1;
+          height: 8rpx;
+          background: $color-bg-page;
+          border-radius: $radius-round;
+          overflow: hidden;
+          margin-right: $spacing-sm;
+
+          .progressFill {
+            height: 100%;
+            background: $color-primary;
+            border-radius: $radius-round;
+          }
+        }
+
+        .progressText {
+          font-size: $font-size-xs;
+          color: $color-text-tertiary;
+          min-width: 80rpx;
+          text-align: right;
+        }
+      }
+    }
+
+    .voyageStatus {
+      margin-left: $spacing-md;
+
+      .statusTag {
+        display: inline-flex;
+        align-items: center;
+        padding: 6rpx 20rpx;
+        border-radius: $radius-round;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+
+        &.sailing {
+          background: rgba(0, 180, 42, 0.1);
+          color: $color-success;
+        }
+
+        &.anchored {
+          background: rgba(255, 125, 0, 0.1);
+          color: $color-warning;
+        }
+
+        &.loading {
+          background: rgba(0, 102, 204, 0.1);
+          color: $color-primary;
+        }
+
+        &.exception {
+          background: rgba(245, 63, 63, 0.1);
+          color: $color-error;
+        }
+      }
+    }
+  }
+}
+
+.exceptionList {
+  .exceptionItem {
+    display: flex;
+    align-items: center;
+    padding: $spacing-md 0;
+    border-bottom: 2rpx solid $color-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .exceptionIcon {
+      width: 64rpx;
+      height: 64rpx;
+      border-radius: $radius-round;
+      background: rgba(245, 63, 63, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32rpx;
+      margin-right: $spacing-md;
+    }
+
+    .exceptionInfo {
+      flex: 1;
+
+      .exceptionTitle {
+        font-size: $font-size-md;
+        font-weight: $font-weight-medium;
+        color: $color-text-primary;
+        margin-bottom: 4rpx;
+      }
+
+      .exceptionShip {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        margin-bottom: 4rpx;
+      }
+
+      .exceptionTime {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+      }
+    }
+
+    .exceptionStatus {
+      .statusTag {
+        display: inline-flex;
+        align-items: center;
+        padding: 6rpx 20rpx;
+        border-radius: $radius-round;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+
+        &.pending {
+          background: rgba(245, 63, 63, 0.1);
+          color: $color-error;
+        }
+
+        &.processing {
+          background: rgba(255, 125, 0, 0.1);
+          color: $color-warning;
+        }
+      }
+    }
+  }
+}
+
+.actionBtn {
+  @include button-reset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88rpx;
+  margin: 0 $page-padding;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-medium;
+  border-radius: $radius-button;
+  box-shadow: 0 4rpx 16rpx rgba(0, 102, 204, 0.3);
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.emptyState {
+  padding: 80rpx 0;
+  text-align: center;
+
+  .emptyIcon {
+    font-size: 80rpx;
+    margin-bottom: $spacing-sm;
+    opacity: 0.3;
+  }
+
+  .emptyText {
+    font-size: $font-size-md;
+    color: $color-text-tertiary;
+  }
+}

@@ -1,0 +1,78 @@
+@use '@/styles/variables.scss' as *;
+
+.timeline {
+  position: relative;
+  padding-left: 40rpx;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 12rpx;
+    top: 8rpx;
+    bottom: 8rpx;
+    width: 2rpx;
+    background: $color-border;
+  }
+
+  .item {
+    position: relative;
+    padding-bottom: $spacing-xl;
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+
+    .dot {
+      position: absolute;
+      left: -40rpx;
+      top: 8rpx;
+      width: 28rpx;
+      height: 28rpx;
+      border-radius: $radius-round;
+      background: $color-bg-card;
+      border: 4rpx solid $color-border;
+      z-index: 1;
+
+      &.completed {
+        border-color: $color-success;
+        background: $color-success;
+      }
+
+      &.current {
+        border-color: $color-primary;
+        background: $color-primary;
+        box-shadow: 0 0 0 8rpx rgba(0, 102, 204, 0.15);
+      }
+
+      &.pending {
+        border-color: $color-text-disabled;
+        background: $color-bg-card;
+      }
+    }
+
+    .content {
+      .time {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+        margin-bottom: $spacing-xs;
+      }
+
+      .title {
+        font-size: $font-size-md;
+        font-weight: $font-weight-medium;
+        color: $color-text-primary;
+        margin-bottom: $spacing-xs;
+
+        &.current {
+          color: $color-primary;
+        }
+      }
+
+      .description {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        line-height: $line-height-normal;
+      }
+    }
+  }
+}

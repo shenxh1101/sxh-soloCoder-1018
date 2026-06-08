@@ -1,0 +1,318 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #E6F2FF 0%, $color-bg-page 100%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 140rpx);
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+
+  .titleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-sm;
+
+    .title {
+      font-size: $font-size-xxl;
+      font-weight: $font-weight-bold;
+    }
+
+    .fleetBtn {
+      @include button-reset;
+      height: $button-height-sm;
+      padding: 0 $spacing-lg;
+      border-radius: $radius-button;
+      background: rgba(255, 255, 255, 0.2);
+      color: $color-text-white;
+      font-size: $font-size-sm;
+
+      &:active {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    }
+  }
+
+  .subtitle {
+    font-size: $font-size-md;
+    opacity: 0.9;
+  }
+}
+
+.content {
+  padding: $spacing-md $page-padding;
+}
+
+.dataGrid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -8rpx $spacing-md;
+
+  .gridItem {
+    width: 33.33%;
+    padding: 8rpx;
+    box-sizing: border-box;
+
+    .gridInner {
+      background: linear-gradient(135deg, rgba(0, 102, 204, 0.08) 0%, rgba(0, 102, 204, 0.04) 100%);
+      border-radius: $radius-md;
+      padding: $spacing-md;
+      text-align: center;
+      border: 1rpx solid rgba(0, 102, 204, 0.1);
+
+      .value {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-bold;
+        color: $color-primary;
+        line-height: 1.2;
+        margin-bottom: $spacing-xs;
+      }
+
+      .label {
+        font-size: $font-size-xs;
+        color: $color-text-secondary;
+      }
+
+      &.status {
+        .value {
+          font-size: $font-size-lg;
+        }
+
+        .statusSuccess {
+          color: $color-success;
+        }
+
+        .statusWarning {
+          color: $color-warning;
+        }
+
+        .statusError {
+          color: $color-error;
+        }
+      }
+    }
+  }
+}
+
+.weatherCard {
+  @extend .card;
+
+  .weatherRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-md;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .weatherItem {
+      display: flex;
+      align-items: center;
+
+      .weatherIcon {
+        font-size: 40rpx;
+        margin-right: $spacing-sm;
+      }
+
+      .weatherInfo {
+        .label {
+          font-size: $font-size-sm;
+          color: $color-text-tertiary;
+        }
+
+        .value {
+          font-size: $font-size-md;
+          color: $color-text-primary;
+          font-weight: $font-weight-medium;
+        }
+      }
+    }
+  }
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin: $spacing-lg 0 $spacing-md;
+  padding-left: $spacing-sm;
+  border-left: 6rpx solid $color-primary;
+}
+
+.dynamicList {
+  .dynamicItem {
+    display: flex;
+    padding: $spacing-md 0;
+    border-bottom: 1rpx solid $color-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .time {
+      width: 140rpx;
+      flex-shrink: 0;
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+
+    .content {
+      flex: 1;
+      padding: 0;
+
+      .location {
+        font-size: $font-size-md;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+        margin-bottom: $spacing-xs;
+      }
+
+      .info {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+      }
+    }
+  }
+}
+
+.fleetStats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+
+  .statItem {
+    flex: 1;
+    text-align: center;
+    padding: $spacing-md;
+    background: $color-bg-card;
+    border-radius: $radius-md;
+    margin-right: $spacing-sm;
+    box-shadow: $shadow-card;
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    .count {
+      font-size: $font-size-xxl;
+      font-weight: $font-weight-bold;
+      color: $color-primary;
+      line-height: 1.2;
+      margin-bottom: $spacing-xs;
+
+      &.success { color: $color-success; }
+      &.warning { color: $color-warning; }
+      &.error { color: $color-error; }
+    }
+
+    .label {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+    }
+  }
+}
+
+.shipItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+
+  .shipHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-md;
+
+    .shipName {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+    }
+
+    .statusTag {
+      padding: 4rpx 16rpx;
+      border-radius: $radius-round;
+      font-size: $font-size-sm;
+
+      &.sailing {
+        background: rgba(0, 180, 42, 0.1);
+        color: $color-success;
+      }
+
+      &.anchored {
+        background: rgba(255, 125, 0, 0.1);
+        color: $color-warning;
+      }
+
+      &.docked {
+        background: rgba(0, 102, 204, 0.1);
+        color: $color-primary;
+      }
+
+      &.maintenance {
+        background: rgba(245, 63, 63, 0.1);
+        color: $color-error;
+      }
+    }
+  }
+
+  .shipInfo {
+    display: flex;
+    flex-wrap: wrap;
+
+    .infoRow {
+      width: 50%;
+      display: flex;
+      margin-bottom: $spacing-sm;
+
+      .label {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+        margin-right: $spacing-xs;
+      }
+
+      .value {
+        font-size: $font-size-sm;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+      }
+    }
+  }
+}
+
+.bottomBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom));
+  background: $color-bg-card;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+
+  .updateBtn {
+    @include button-reset;
+    width: 100%;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    color: $color-text-white;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    box-shadow: 0 4rpx 16rpx rgba(0, 102, 204, 0.3);
+
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+  }
+}

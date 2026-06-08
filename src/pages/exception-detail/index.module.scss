@@ -1,0 +1,291 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #E6F2FF 0%, $color-bg-page 100%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 40rpx);
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  background: linear-gradient(135deg, $color-error 0%, #FF6B6B 100%);
+  color: $color-text-white;
+
+  .exceptionNo {
+    font-size: $font-size-sm;
+    opacity: 0.9;
+    margin-bottom: $spacing-xs;
+  }
+
+  .title {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-sm;
+  }
+
+  .shipName {
+    font-size: $font-size-md;
+    opacity: 0.95;
+    margin-bottom: $spacing-md;
+  }
+
+  .statusRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .typeTag {
+      display: inline-flex;
+      align-items: center;
+      padding: 8rpx 24rpx;
+      border-radius: $radius-round;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .statusTag {
+      display: inline-flex;
+      align-items: center;
+      padding: 8rpx 24rpx;
+      border-radius: $radius-round;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      background: rgba(255, 255, 255, 0.25);
+    }
+  }
+}
+
+.section {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+
+  .sectionTitle {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-md;
+    display: flex;
+    align-items: center;
+
+    .titleIcon {
+      margin-right: $spacing-sm;
+      font-size: $font-size-xl;
+    }
+  }
+}
+
+.infoGrid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -8rpx;
+
+  .infoItem {
+    width: 50%;
+    padding: 8rpx;
+    box-sizing: border-box;
+
+    .infoLabel {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+      margin-bottom: 4rpx;
+    }
+
+    .infoValue {
+      font-size: $font-size-md;
+      color: $color-text-primary;
+      font-weight: $font-weight-medium;
+    }
+  }
+}
+
+.description {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+  padding: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+}
+
+.photoList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+
+  .photoItem {
+    width: calc(33.33% - #{$spacing-sm} * 2 / 3);
+    aspect-ratio: 1;
+    border-radius: $radius-md;
+    overflow: hidden;
+    position: relative;
+
+    .photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}
+
+.timeline {
+  position: relative;
+  padding-left: 40rpx;
+
+  .timelineItem {
+    position: relative;
+    padding-bottom: $spacing-lg;
+
+    &:last-child {
+      padding-bottom: 0;
+    }
+
+    .timelineDot {
+      position: absolute;
+      left: -40rpx;
+      top: 8rpx;
+      width: 24rpx;
+      height: 24rpx;
+      border-radius: $radius-round;
+      background: $color-primary;
+      border: 4rpx solid $color-bg-card;
+      box-shadow: 0 0 0 4rpx rgba(0, 102, 204, 0.2);
+    }
+
+    .timelineLine {
+      position: absolute;
+      left: -30rpx;
+      top: 32rpx;
+      width: 4rpx;
+      height: calc(100% - 24rpx);
+      background: $color-border;
+    }
+
+    &:last-child .timelineLine {
+      display: none;
+    }
+
+    .timelineContent {
+      background: $color-bg-page;
+      border-radius: $radius-md;
+      padding: $spacing-md;
+
+      .timelineTitle {
+        font-size: $font-size-md;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+        margin-bottom: $spacing-xs;
+      }
+
+      .timelineTime {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+        margin-bottom: $spacing-sm;
+      }
+
+      .timelineDesc {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        line-height: $line-height-normal;
+      }
+
+      .timelineUser {
+        font-size: $font-size-sm;
+        color: $color-primary;
+        margin-top: $spacing-sm;
+      }
+    }
+  }
+}
+
+.formItem {
+  margin-bottom: $spacing-lg;
+
+  .formLabel {
+    font-size: $font-size-md;
+    color: $color-text-primary;
+    font-weight: $font-weight-medium;
+    margin-bottom: $spacing-sm;
+
+    .required {
+      color: $color-error;
+      margin-right: $spacing-xs;
+    }
+  }
+
+  .formTextarea {
+    width: 100%;
+    min-height: 200rpx;
+    padding: $spacing-md;
+    background: $color-bg-page;
+    border-radius: $radius-md;
+    font-size: $font-size-md;
+    color: $color-text-primary;
+    box-sizing: border-box;
+  }
+}
+
+.actionBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: $spacing-md;
+
+  .actionBtn {
+    @include button-reset;
+    flex: 1;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    background: $color-bg-page;
+    color: $color-text-secondary;
+
+    &.primary {
+      background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+      color: $color-text-white;
+    }
+
+    &.success {
+      background: linear-gradient(135deg, $color-success 0%, #33CC55 100%);
+      color: $color-text-white;
+    }
+
+    &.warning {
+      background: linear-gradient(135deg, $color-warning 0%, #FF9933 100%);
+      color: $color-text-white;
+    }
+  }
+}
+
+.emptyState {
+  padding: 120rpx 0;
+  text-align: center;
+
+  .emptyIcon {
+    font-size: 120rpx;
+    margin-bottom: $spacing-md;
+    opacity: 0.3;
+  }
+
+  .emptyText {
+    font-size: $font-size-md;
+    color: $color-text-tertiary;
+  }
+}
+
+.noPhotos {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  text-align: center;
+  padding: 40rpx 0;
+}

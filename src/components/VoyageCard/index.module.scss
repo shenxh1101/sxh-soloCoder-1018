@@ -1,0 +1,172 @@
+@use '@/styles/variables.scss' as *;
+
+.voyageCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: $shadow-card-hover;
+  }
+
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: $spacing-md;
+
+    .left {
+      flex: 1;
+
+      .voyageNo {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        color: $color-text-primary;
+        margin-bottom: $spacing-xs;
+      }
+
+      .shipName {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+      }
+    }
+
+    .statusBadge {
+      display: inline-flex;
+      align-items: center;
+      padding: 8rpx 20rpx;
+      border-radius: $radius-round;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      white-space: nowrap;
+
+      &.success {
+        background: rgba(0, 180, 42, 0.1);
+        color: $color-success;
+      }
+
+      &.warning {
+        background: rgba(255, 125, 0, 0.1);
+        color: $color-warning;
+      }
+
+      &.error {
+        background: rgba(245, 63, 63, 0.1);
+        color: $color-error;
+      }
+
+      &.primary {
+        background: rgba(0, 102, 204, 0.1);
+        color: $color-primary;
+      }
+    }
+  }
+
+  .route {
+    display: flex;
+    align-items: center;
+    margin-bottom: $spacing-md;
+    padding: $spacing-md 0;
+    border-top: 1rpx solid $color-divider;
+    border-bottom: 1rpx solid $color-divider;
+
+    .port {
+      flex: 1;
+      text-align: center;
+
+      .portName {
+        font-size: $font-size-md;
+        font-weight: $font-weight-semibold;
+        color: $color-text-primary;
+        margin-bottom: $spacing-xs;
+      }
+
+      .portTime {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+      }
+    }
+
+    .arrow {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 $spacing-md;
+
+      .line {
+        width: 80rpx;
+        height: 2rpx;
+        background: linear-gradient(90deg, $color-primary-light 0%, $color-primary 100%);
+        position: relative;
+
+        &::after {
+          content: '›';
+          position: absolute;
+          right: -8rpx;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: $font-size-xl;
+          color: $color-primary;
+          line-height: 1;
+        }
+      }
+    }
+  }
+
+  .progress {
+    margin-bottom: $spacing-md;
+
+    .progressHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: $spacing-sm;
+
+      .label {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+      }
+
+      .value {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        color: $color-primary;
+      }
+    }
+
+    .progressBar {
+      width: 100%;
+      height: 12rpx;
+      background: $color-bg-page;
+      border-radius: $radius-round;
+      overflow: hidden;
+
+      .progressFill {
+        height: 100%;
+        background: linear-gradient(90deg, $color-primary-light 0%, $color-primary 100%);
+        border-radius: $radius-round;
+        transition: width $transition-slow;
+      }
+    }
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .info {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+
+    .arrowBtn {
+      font-size: $font-size-lg;
+      color: $color-text-tertiary;
+    }
+  }
+}

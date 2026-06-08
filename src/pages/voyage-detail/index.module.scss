@@ -1,0 +1,432 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #E6F2FF 0%, $color-bg-page 100%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 40rpx);
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+
+  .voyageNo {
+    font-size: $font-size-sm;
+    opacity: 0.9;
+    margin-bottom: $spacing-xs;
+  }
+
+  .shipName {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-sm;
+  }
+
+  .route {
+    font-size: $font-size-md;
+    opacity: 0.95;
+    margin-bottom: $spacing-md;
+  }
+
+  .progressSection {
+    .progressLabel {
+      display: flex;
+      justify-content: space-between;
+      font-size: $font-size-sm;
+      margin-bottom: $spacing-xs;
+    }
+
+    .progressBar {
+      height: 16rpx;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: $radius-round;
+      overflow: hidden;
+
+      .progressFill {
+        height: 100%;
+        background: $color-success;
+        border-radius: $radius-round;
+        transition: width 0.5s ease;
+      }
+    }
+  }
+
+  .statusRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: $spacing-md;
+
+    .statusTag {
+      display: inline-flex;
+      align-items: center;
+      padding: 8rpx 24rpx;
+      border-radius: $radius-round;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .eta {
+      font-size: $font-size-sm;
+      opacity: 0.9;
+    }
+  }
+}
+
+.section {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+
+  .sectionTitle {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-md;
+    display: flex;
+    align-items: center;
+
+    .titleIcon {
+      margin-right: $spacing-sm;
+      font-size: $font-size-xl;
+    }
+  }
+}
+
+.infoGrid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -8rpx;
+
+  .infoItem {
+    width: 50%;
+    padding: 8rpx;
+    box-sizing: border-box;
+
+    .infoLabel {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+      margin-bottom: 4rpx;
+    }
+
+    .infoValue {
+      font-size: $font-size-md;
+      color: $color-text-primary;
+      font-weight: $font-weight-medium;
+    }
+  }
+}
+
+.cargoList {
+  .cargoItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-md 0;
+    border-bottom: 2rpx solid $color-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .cargoInfo {
+      .cargoName {
+        font-size: $font-size-md;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+        margin-bottom: 4rpx;
+      }
+
+      .cargoRoute {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+      }
+    }
+
+    .cargoWeight {
+      font-size: $font-size-lg;
+      color: $color-primary;
+      font-weight: $font-weight-semibold;
+    }
+  }
+}
+
+.portList {
+  .portItem {
+    display: flex;
+    padding: $spacing-md 0;
+    border-bottom: 2rpx solid $color-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .portIcon {
+      width: 64rpx;
+      font-size: 32rpx;
+      text-align: center;
+      margin-right: $spacing-sm;
+    }
+
+    .portInfo {
+      flex: 1;
+
+      .portName {
+        font-size: $font-size-md;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+        margin-bottom: $spacing-xs;
+      }
+
+      .portType {
+        display: inline-block;
+        padding: 4rpx 12rpx;
+        border-radius: $radius-round;
+        font-size: $font-size-xs;
+        margin-right: $spacing-sm;
+        background: rgba(0, 102, 204, 0.1);
+        color: $color-primary;
+      }
+
+      .portTime {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        margin-top: $spacing-xs;
+
+        .timeLabel {
+          color: $color-text-tertiary;
+          margin-right: $spacing-xs;
+        }
+      }
+    }
+
+    .portStatus {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+      text-align: right;
+
+      .statusCompleted {
+        color: $color-success;
+      }
+
+      .statusCurrent {
+        color: $color-primary;
+        font-weight: $font-weight-medium;
+      }
+    }
+  }
+}
+
+.crewList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+
+  .crewItem {
+    display: flex;
+    align-items: center;
+    padding: $spacing-sm $spacing-md;
+    background: $color-bg-page;
+    border-radius: $radius-button;
+
+    .crewAvatar {
+      width: 56rpx;
+      height: 56rpx;
+      border-radius: $radius-round;
+      background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+      color: $color-text-white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      margin-right: $spacing-sm;
+    }
+
+    .crewName {
+      font-size: $font-size-md;
+      color: $color-text-primary;
+    }
+  }
+}
+
+.recordList {
+  .recordItem {
+    padding: $spacing-md 0;
+    border-bottom: 2rpx solid $color-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .recordHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: $spacing-sm;
+
+      .recordTitle {
+        font-size: $font-size-md;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+      }
+
+      .recordStatus {
+        padding: 4rpx 12rpx;
+        border-radius: $radius-round;
+        font-size: $font-size-xs;
+
+        &.confirmed {
+          background: rgba(0, 180, 42, 0.1);
+          color: $color-success;
+        }
+
+        &.pending {
+          background: rgba(255, 125, 0, 0.1);
+          color: $color-warning;
+        }
+
+        &.rejected {
+          background: rgba(245, 63, 63, 0.1);
+          color: $color-error;
+        }
+      }
+    }
+
+    .recordInfo {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      margin-bottom: $spacing-xs;
+
+      .infoRow {
+        display: flex;
+        margin-bottom: 4rpx;
+
+        .infoLabel {
+          width: 120rpx;
+          color: $color-text-tertiary;
+        }
+      }
+    }
+
+    .recordPhotos {
+      display: flex;
+      margin-top: $spacing-sm;
+      gap: $spacing-sm;
+
+      .photoItem {
+        width: 120rpx;
+        height: 120rpx;
+        border-radius: $radius-md;
+        overflow: hidden;
+
+        .photo {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+    }
+  }
+}
+
+.supplyList {
+  .supplyItem {
+    padding: $spacing-md 0;
+    border-bottom: 2rpx solid $color-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .supplyHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: $spacing-sm;
+
+      .supplyType {
+        font-size: $font-size-md;
+        color: $color-text-primary;
+        font-weight: $font-weight-medium;
+
+        .typeIcon {
+          margin-right: $spacing-xs;
+        }
+      }
+
+      .supplyTime {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+      }
+    }
+
+    .supplyInfo {
+      .infoRow {
+        display: flex;
+        justify-content: space-between;
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        margin-bottom: 4rpx;
+
+        .infoLabel {
+          color: $color-text-tertiary;
+        }
+
+        .infoValue {
+          color: $color-text-primary;
+          font-weight: $font-weight-medium;
+        }
+      }
+    }
+  }
+}
+
+.actionBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: $spacing-md;
+
+  .actionBtn {
+    @include button-reset;
+    flex: 1;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    background: $color-bg-page;
+    color: $color-text-secondary;
+
+    &.primary {
+      background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+      color: $color-text-white;
+    }
+  }
+}
+
+.emptyState {
+  padding: 60rpx 0;
+  text-align: center;
+
+  .emptyIcon {
+    font-size: 80rpx;
+    margin-bottom: $spacing-sm;
+    opacity: 0.3;
+  }
+
+  .emptyText {
+    font-size: $font-size-md;
+    color: $color-text-tertiary;
+  }
+}

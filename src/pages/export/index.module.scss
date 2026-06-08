@@ -1,0 +1,351 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #E6F2FF 0%, $color-bg-page 100%);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 40rpx);
+}
+
+.header {
+  padding: $spacing-lg $page-padding;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+
+  .title {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-xs;
+  }
+
+  .subtitle {
+    font-size: $font-size-md;
+    opacity: 0.9;
+  }
+}
+
+.section {
+  margin: $spacing-md $page-padding;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+
+  .sectionTitle {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin-bottom: $spacing-md;
+    display: flex;
+    align-items: center;
+
+    .titleIcon {
+      margin-right: $spacing-sm;
+      font-size: $font-size-xl;
+    }
+  }
+}
+
+.formItem {
+  margin-bottom: $spacing-lg;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .formLabel {
+    font-size: $font-size-md;
+    color: $color-text-primary;
+    font-weight: $font-weight-medium;
+    margin-bottom: $spacing-sm;
+  }
+
+  .formInput {
+    width: 100%;
+    height: 88rpx;
+    padding: 0 $spacing-md;
+    background: $color-bg-page;
+    border-radius: $radius-md;
+    font-size: $font-size-md;
+    color: $color-text-primary;
+    box-sizing: border-box;
+  }
+
+  .formPicker {
+    width: 100%;
+    height: 88rpx;
+    padding: 0 $spacing-md;
+    background: $color-bg-page;
+    border-radius: $radius-md;
+    font-size: $font-size-md;
+    color: $color-text-primary;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .placeholder {
+      color: $color-text-tertiary;
+    }
+
+    .value {
+      color: $color-text-primary;
+    }
+
+    .arrow {
+      color: $color-text-tertiary;
+    }
+  }
+}
+
+.dateRange {
+  display: flex;
+  gap: $spacing-md;
+
+  .dateItem {
+    flex: 1;
+  }
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+
+  .checkboxItem {
+    display: flex;
+    align-items: center;
+    padding: $spacing-sm $spacing-md;
+    background: $color-bg-page;
+    border-radius: $radius-button;
+    border: 2rpx solid transparent;
+    transition: all $transition-base;
+
+    &.active {
+      background: rgba(0, 102, 204, 0.1);
+      border-color: $color-primary;
+    }
+
+    .checkboxIcon {
+      width: 32rpx;
+      height: 32rpx;
+      border-radius: 6rpx;
+      border: 2rpx solid $color-text-tertiary;
+      margin-right: $spacing-sm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20rpx;
+      color: $color-text-white;
+
+      &.active {
+        background: $color-primary;
+        border-color: $color-primary;
+      }
+    }
+
+    .checkboxLabel {
+      font-size: $font-size-md;
+      color: $color-text-primary;
+    }
+  }
+}
+
+.voyageList {
+  .voyageItem {
+    display: flex;
+    align-items: center;
+    padding: $spacing-md 0;
+    border-bottom: 2rpx solid $color-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .checkbox {
+      width: 40rpx;
+      height: 40rpx;
+      border-radius: $radius-round;
+      border: 3rpx solid $color-text-tertiary;
+      margin-right: $spacing-md;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24rpx;
+      color: $color-text-white;
+
+      &.active {
+        background: $color-primary;
+        border-color: $color-primary;
+      }
+    }
+
+    .voyageInfo {
+      flex: 1;
+
+      .voyageNo {
+        font-size: $font-size-md;
+        font-weight: $font-weight-medium;
+        color: $color-text-primary;
+        margin-bottom: 4rpx;
+      }
+
+      .voyageRoute {
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+        margin-bottom: 4rpx;
+      }
+
+      .voyageDate {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+      }
+    }
+
+    .voyageStatus {
+      .statusTag {
+        display: inline-flex;
+        align-items: center;
+        padding: 6rpx 20rpx;
+        border-radius: $radius-round;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+
+        &.completed {
+          background: rgba(0, 102, 204, 0.1);
+          color: $color-primary;
+        }
+
+        &.sailing {
+          background: rgba(0, 180, 42, 0.1);
+          color: $color-success;
+        }
+
+        &.anchored {
+          background: rgba(255, 125, 0, 0.1);
+          color: $color-warning;
+        }
+
+        &.loading {
+          background: rgba(0, 102, 204, 0.1);
+          color: $color-primary;
+        }
+      }
+    }
+  }
+}
+
+.exportSummary {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+
+  .summaryRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: $spacing-sm;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .summaryLabel {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+    }
+
+    .summaryValue {
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      font-weight: $font-weight-medium;
+    }
+  }
+}
+
+.actionBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: $spacing-md;
+
+  .actionBtn {
+    @include button-reset;
+    flex: 1;
+    height: $button-height-lg;
+    border-radius: $radius-button;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    background: $color-bg-page;
+    color: $color-text-secondary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.primary {
+      background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+      color: $color-text-white;
+    }
+
+    .btnIcon {
+      margin-right: $spacing-sm;
+    }
+  }
+}
+
+.selectAll {
+  display: flex;
+  align-items: center;
+  padding: $spacing-sm 0;
+  margin-bottom: $spacing-sm;
+
+  .checkbox {
+    width: 40rpx;
+    height: 40rpx;
+    border-radius: $radius-round;
+    border: 3rpx solid $color-text-tertiary;
+    margin-right: $spacing-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24rpx;
+    color: $color-text-white;
+
+    &.active {
+      background: $color-primary;
+      border-color: $color-primary;
+    }
+  }
+
+  .label {
+    font-size: $font-size-md;
+    color: $color-text-primary;
+    font-weight: $font-weight-medium;
+  }
+
+  .count {
+    font-size: $font-size-sm;
+    color: $color-text-tertiary;
+    margin-left: $spacing-sm;
+  }
+}
+
+.emptyState {
+  padding: 80rpx 0;
+  text-align: center;
+
+  .emptyIcon {
+    font-size: 80rpx;
+    margin-bottom: $spacing-sm;
+    opacity: 0.3;
+  }
+
+  .emptyText {
+    font-size: $font-size-md;
+    color: $color-text-tertiary;
+  }
+}

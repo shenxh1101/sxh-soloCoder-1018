@@ -1,0 +1,104 @@
+@use '@/styles/variables.scss' as *;
+
+.statusCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-md;
+
+    .title {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      @include text-ellipsis;
+      flex: 1;
+    }
+
+    .statusBadge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6rpx 20rpx;
+      border-radius: $radius-round;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      white-space: nowrap;
+
+      &.success {
+        background: rgba(0, 180, 42, 0.1);
+        color: $color-success;
+      }
+
+      &.warning {
+        background: rgba(255, 125, 0, 0.1);
+        color: $color-warning;
+      }
+
+      &.error {
+        background: rgba(245, 63, 63, 0.1);
+        color: $color-error;
+      }
+
+      &.primary {
+        background: rgba(0, 102, 204, 0.1);
+        color: $color-primary;
+      }
+    }
+  }
+
+  .content {
+    .row {
+      display: flex;
+      align-items: center;
+      margin-bottom: $spacing-sm;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .label {
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+        width: 120rpx;
+        flex-shrink: 0;
+      }
+
+      .value {
+        font-size: $font-size-md;
+        color: $color-text-primary;
+        flex: 1;
+        @include text-ellipsis;
+      }
+    }
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1rpx solid $color-divider;
+
+    .time {
+      font-size: $font-size-sm;
+      color: $color-text-tertiary;
+    }
+
+    .arrow {
+      font-size: $font-size-lg;
+      color: $color-text-tertiary;
+    }
+  }
+}
