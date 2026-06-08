@@ -4,7 +4,8 @@ import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import styles from './index.module.scss';
 import classnames from 'classnames';
 import { useApp } from '@/store/AppContext';
-import { mockVoyages, mockShips } from '@/data/voyage';
+import { mockVoyages } from '@/data/voyage';
+import { mockShips } from '@/data/ship';
 import {
   loadingRecordService,
   oilWaterSupplyService,
