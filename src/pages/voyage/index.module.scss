@@ -46,6 +46,61 @@
   }
 }
 
+.quickEntry {
+  padding: 0 $page-padding;
+  margin-top: -24rpx;
+  margin-bottom: $spacing-md;
+  display: flex;
+  gap: $spacing-md;
+
+  .entryCard {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: $color-bg-card;
+    border-radius: $radius-lg;
+    padding: $spacing-lg;
+    box-shadow: $shadow-card;
+    transition: all $transition-base;
+
+    &:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    .entryIcon {
+      font-size: 56rpx;
+      margin-right: $spacing-md;
+      flex-shrink: 0;
+    }
+
+    .entryInfo {
+      flex: 1;
+      min-width: 0;
+
+      .entryTitle {
+        display: block;
+        font-size: $font-size-md;
+        font-weight: $font-weight-semibold;
+        color: $color-text-primary;
+        margin-bottom: $spacing-xs;
+      }
+
+      .entryDesc {
+        display: block;
+        font-size: $font-size-sm;
+        color: $color-text-secondary;
+      }
+    }
+
+    .entryArrow {
+      font-size: $font-size-lg;
+      color: $color-primary;
+      flex-shrink: 0;
+    }
+  }
+}
+
 .filterBar {
   padding: $spacing-md $page-padding;
   white-space: nowrap;

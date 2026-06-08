@@ -72,12 +72,6 @@ const MessagePage: React.FC = () => {
   }, [dataVersion]);
 
   const handleMessageClick = (message: Message) => {
-    if (!message.isRead) {
-      const now = getCurrentDateTime();
-      messageService.markAsRead(message.id, now);
-      refreshData();
-      reloadData();
-    }
     setSelectedMessage(message);
     setShowDetail(true);
     console.log('[MessagePage] 查看消息:', message.id);
@@ -211,6 +205,15 @@ const MessagePage: React.FC = () => {
             <Text className={styles.timeInfo}>{formatDateTime(selectedMessage.createTime)}</Text>
           </View>
 
+          {selectedMessage.isRead && selectedMessage.readTime && (
+            <View className={styles.confirmInfo}>
+              <Text className={styles.confirmIcon}>✅</Text>
+              <Text className={styles.confirmText}>
+                已于 {selectedMessage.readTime} 确认收到
+              </Text>
+            </View>
+          )}
+
           <Text className={styles.modalContentText}>{selectedMessage.content}</Text>
 
           {selectedMessage.extra && (
@@ -239,7 +242,14 @@ const MessagePage: React.FC = () => {
                 查看航次
               </Button>
             )}
-            {selectedMessage.extra?.actionRequired && state.userRole === 'crew' && !selectedMessage.isRead ? (
+            {selectedMessage.isRead ? (
+              <Button
+                className={classnames(styles.actionBtn, styles.primary)}
+                onClick={() => setShowDetail(false)}
+              >
+                关闭
+              </Button>
+            ) : selectedMessage.extra?.actionRequired && state.userRole === 'crew' ? (
               <Button
                 className={classnames(styles.actionBtn, styles.primary)}
                 onClick={handleConfirm}

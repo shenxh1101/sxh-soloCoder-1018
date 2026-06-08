@@ -8,7 +8,9 @@ export default defineAppConfig({
     'pages/voyage-detail/index',
     'pages/exception-detail/index',
     'pages/fleet-overview/index',
-    'pages/export/index'
+    'pages/export/index',
+    'pages/voyage-board/index',
+    'pages/voyage-tasks/index'
   ],
   window: {
     backgroundTextStyle: 'light',

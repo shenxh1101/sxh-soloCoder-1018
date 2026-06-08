@@ -1,0 +1,380 @@
+.pageContainer {
+  min-height: 100vh;
+  background-color: #F0F7FF;
+  padding-bottom: 40px;
+}
+
+.header {
+  background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+  padding: 48rpx 32rpx 40rpx;
+  color: #FFFFFF;
+}
+
+.title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.subtitle {
+  display: block;
+  font-size: 26rpx;
+  opacity: 0.85;
+}
+
+.filterSection {
+  background-color: #FFFFFF;
+  margin: -24rpx 24rpx 24rpx;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 102, 204, 0.08);
+}
+
+.filterRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+  margin-bottom: 20rpx;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.filterItem {
+  flex: 1;
+}
+
+.filterLabel {
+  display: block;
+  font-size: 24rpx;
+  color: #86909C;
+  margin-bottom: 8rpx;
+}
+
+.filterPicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72rpx;
+  padding: 0 20rpx;
+  background-color: #F2F3F5;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #1D2129;
+}
+
+.pickerArrow {
+  font-size: 20rpx;
+  color: #86909C;
+  margin-left: 8rpx;
+}
+
+.voyageList {
+  padding: 0 24rpx;
+}
+
+.voyageCard {
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.voyageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20rpx;
+}
+
+.voyageInfo {
+  flex: 1;
+}
+
+.voyageNo {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1D2129;
+  margin-bottom: 4rpx;
+}
+
+.voyageShip {
+  display: block;
+  font-size: 26rpx;
+  color: #4E5969;
+}
+
+.statusTag {
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.sailing { background-color: #E8F3FF; color: #0066CC; }
+.anchored { background-color: #FFF7E8; color: #FF7D00; }
+.loading { background-color: #E8FFEA; color: #00B42A; }
+.unloading { background-color: #E8FFEA; color: #00B42A; }
+.completed { background-color: #F2F3F5; color: #4E5969; }
+.exception { background-color: #FFECE8; color: #F53F3F; }
+
+.voyageRoute {
+  margin-bottom: 16rpx;
+}
+
+.routeText {
+  display: block;
+  font-size: 28rpx;
+  color: #1D2129;
+  margin-bottom: 4rpx;
+}
+
+.routeDate {
+  display: block;
+  font-size: 24rpx;
+  color: #86909C;
+}
+
+.voyageCargo {
+  margin-bottom: 20rpx;
+}
+
+.cargoText {
+  font-size: 26rpx;
+  color: #4E5969;
+}
+
+.voyageStats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.statBadge {
+  display: flex;
+  align-items: center;
+  background-color: #F2F3F5;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  gap: 6rpx;
+}
+
+.statWarning {
+  background-color: #FFECE8;
+}
+
+.statIcon {
+  font-size: 24rpx;
+}
+
+.statText {
+  font-size: 24rpx;
+  color: #4E5969;
+  font-weight: 500;
+}
+
+.progressBar {
+  position: relative;
+  height: 16rpx;
+  background-color: #F2F3F5;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #0066CC 0%, #3395FF 100%);
+  border-radius: 8rpx;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20rpx;
+  color: #1D2129;
+  font-weight: 600;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 80rpx 0;
+  color: #86909C;
+  font-size: 28rpx;
+}
+
+.detailHeader {
+  background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+  padding: 32rpx 32rpx 40rpx;
+  color: #FFFFFF;
+  position: relative;
+}
+
+.backBtn {
+  display: block;
+  font-size: 28rpx;
+  margin-bottom: 16rpx;
+  opacity: 0.9;
+}
+
+.detailTitle {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+
+.detailShip {
+  display: block;
+  font-size: 28rpx;
+  opacity: 0.9;
+  margin-bottom: 16rpx;
+}
+
+.section {
+  background-color: #FFFFFF;
+  margin: 24rpx;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.sectionTitle {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1D2129;
+  margin-bottom: 20rpx;
+}
+
+.sectionAction {
+  font-size: 26rpx;
+  color: #0066CC;
+}
+
+.summaryGrid {
+  display: flex;
+  justify-content: space-between;
+}
+
+.summaryItem {
+  text-align: center;
+  flex: 1;
+}
+
+.summaryValue {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1D2129;
+  margin-bottom: 8rpx;
+}
+
+.summaryLabel {
+  display: block;
+  font-size: 24rpx;
+  color: #86909C;
+}
+
+.warning {
+  color: #F53F3F;
+}
+
+.recordCard {
+  display: flex;
+  align-items: flex-start;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #F2F3F5;
+  gap: 16rpx;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.recordIcon {
+  font-size: 36rpx;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F2F3F5;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+}
+
+.recordInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.recordTitle {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1D2129;
+  margin-bottom: 6rpx;
+}
+
+.recordDesc {
+  display: block;
+  font-size: 24rpx;
+  color: #4E5969;
+  margin-bottom: 4rpx;
+  line-height: 1.5;
+}
+
+.recordTime {
+  display: block;
+  font-size: 22rpx;
+  color: #86909C;
+}
+
+.recordResult {
+  display: block;
+  font-size: 24rpx;
+  color: #0066CC;
+  margin-top: 4rpx;
+}
+
+.recordStatus {
+  padding: 6rpx 12rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  flex-shrink: 0;
+}
+
+.confirmed { background-color: #E8FFEA; color: #00B42A; }
+.pending { background-color: #FFF7E8; color: #FF7D00; }
+.read { background-color: #F2F3F5; color: #4E5969; }
+.unread { background-color: #FFECE8; color: #F53F3F; }
+
+.exp_pending { background-color: #FFF7E8; color: #FF7D00; }
+.exp_processing { background-color: #E8F3FF; color: #0066CC; }
+.exp_resolved { background-color: #E8FFEA; color: #00B42A; }
+.exp_closed { background-color: #F2F3F5; color: #4E5969; }
+
+.recordAmount {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #F53F3F;
+  flex-shrink: 0;
+}
+
+.footerPadding {
+  height: 40rpx;
+}

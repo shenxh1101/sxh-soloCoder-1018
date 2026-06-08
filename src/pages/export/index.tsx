@@ -49,6 +49,11 @@ const ExportPage: React.FC = () => {
   const [selectedVoyages, setSelectedVoyages] = useState<string[]>([]);
   const [keyword, setKeyword] = useState('');
   const [dataVersion, setDataVersion] = useState(0);
+  const [historyFormatFilter, setHistoryFormatFilter] = useState<string>('all');
+  const [historyStartDate, setHistoryStartDate] = useState('');
+  const [historyEndDate, setHistoryEndDate] = useState('');
+  const [showRecordDetail, setShowRecordDetail] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<ExportRecord | null>(null);
 
   const reloadData = useCallback(() => {
     setDataVersion(v => v + 1);
@@ -102,6 +107,24 @@ const ExportPage: React.FC = () => {
   const exportRecords = useMemo(() => {
     return exportRecordService.getAll();
   }, [dataVersion]);
+
+  const filteredExportRecords = useMemo(() => {
+    let result = [...exportRecords];
+    
+    if (historyFormatFilter !== 'all') {
+      result = result.filter(r => r.format === historyFormatFilter);
+    }
+    
+    if (historyStartDate) {
+      result = result.filter(r => r.createTime >= historyStartDate);
+    }
+    
+    if (historyEndDate) {
+      result = result.filter(r => r.createTime <= historyEndDate + ' 23:59:59');
+    }
+    
+    return result;
+  }, [exportRecords, historyFormatFilter, historyStartDate, historyEndDate]);
 
   const isAllSelected = useMemo(() => {
     return filteredVoyages.length > 0 && selectedVoyages.length === filteredVoyages.length;
@@ -248,12 +271,17 @@ const ExportPage: React.FC = () => {
   };
 
   const handleViewRecord = (record: ExportRecord) => {
-    Taro.showModal({
-      title: '导出记录',
-      content: `文件名：${record.fileName}\n格式：${record.formatText}\n航次数量：${record.voyageCount} 条\n总载货量：${formatWeight(record.totalWeight)}\n生成时间：${record.createTime}\n操作人：${record.operator}`,
-      showCancel: false,
-      confirmText: '确定'
-    });
+    setSelectedRecord(record);
+    setShowRecordDetail(true);
+  };
+
+  const handleCloseRecordDetail = () => {
+    setShowRecordDetail(false);
+    setSelectedRecord(null);
+  };
+
+  const getRecordVoyages = (record: ExportRecord) => {
+    return mockVoyages.filter(v => record.voyageIds.includes(v.id));
   };
 
   const handleReset = () => {
@@ -502,48 +530,253 @@ const ExportPage: React.FC = () => {
     </>
   );
 
-  const renderExportHistory = () => (
-    <View className={styles.section}>
-      <Text className={styles.sectionTitle}>
-        <Text className={styles.titleIcon}>📁</Text>
-        导出记录
-      </Text>
+  const handleHistoryStartDateClick = () => {
+    const dates = ['2026-06-01', '2026-06-08', '2026-06-15'];
+    Taro.showActionSheet({
+      itemList: dates,
+      success: (res) => {
+        setHistoryStartDate(dates[res.tapIndex]);
+      }
+    });
+  };
 
-      {exportRecords.length === 0 ? (
-        <View className={styles.emptyState}>
-          <Text className={styles.emptyIcon}>📭</Text>
-          <Text className={styles.emptyText}>暂无导出记录</Text>
-        </View>
-      ) : (
-        <View className={styles.recordList}>
-          {exportRecords.map((record) => (
-            <View
-              key={record.id}
-              className={styles.recordItem}
-              onClick={() => handleViewRecord(record)}
-            >
-              <View className={styles.recordIcon}>
-                {record.format === 'excel' && '📊'}
-                {record.format === 'pdf' && '📄'}
-                {record.format === 'csv' && '📋'}
-              </View>
-              <View className={styles.recordInfo}>
-                <Text className={styles.recordName}>{record.fileName}</Text>
-                <Text className={styles.recordMeta}>
-                  {record.formatText} · {record.voyageCount} 条 · {formatWeight(record.totalWeight)}
-                </Text>
-                <Text className={styles.recordTime}>
-                  生成于 {record.createTime} · {record.operator}
-                </Text>
-              </View>
-              <View className={classnames(styles.recordStatus, styles[record.status])}>
-                {record.statusText}
+  const handleHistoryEndDateClick = () => {
+    const dates = ['2026-06-15', '2026-06-20', '2026-06-30'];
+    Taro.showActionSheet({
+      itemList: dates,
+      success: (res) => {
+        setHistoryEndDate(dates[res.tapIndex]);
+      }
+    });
+  };
+
+  const handleHistoryReset = () => {
+    setHistoryFormatFilter('all');
+    setHistoryStartDate('');
+    setHistoryEndDate('');
+  };
+
+  const renderRecordDetailModal = () => {
+    if (!showRecordDetail || !selectedRecord) return null;
+    
+    const recordVoyages = getRecordVoyages(selectedRecord);
+    
+    return (
+      <View className={styles.detailModal} onClick={handleCloseRecordDetail}>
+        <View className={styles.detailModalContent} onClick={(e) => e.stopPropagation()}>
+          <View className={styles.detailModalHeader}>
+            <Text className={styles.detailModalTitle}>导出记录详情</Text>
+            <Text className={styles.detailModalClose} onClick={handleCloseRecordDetail}>×</Text>
+          </View>
+          
+          <ScrollView className={styles.detailModalBody} scrollY>
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionTitle}>基本信息</Text>
+              <View className={styles.detailGrid}>
+                <View className={styles.detailItem}>
+                  <Text className={styles.detailLabel}>文件名</Text>
+                  <Text className={styles.detailValue}>{selectedRecord.fileName}</Text>
+                </View>
+                <View className={styles.detailItem}>
+                  <Text className={styles.detailLabel}>格式</Text>
+                  <Text className={styles.detailValue}>{selectedRecord.formatText}</Text>
+                </View>
+                <View className={styles.detailItem}>
+                  <Text className={styles.detailLabel}>航次数量</Text>
+                  <Text className={styles.detailValue}>{selectedRecord.voyageCount} 条</Text>
+                </View>
+                <View className={styles.detailItem}>
+                  <Text className={styles.detailLabel}>总载货量</Text>
+                  <Text className={styles.detailValue}>{formatWeight(selectedRecord.totalWeight)}</Text>
+                </View>
+                <View className={styles.detailItem}>
+                  <Text className={styles.detailLabel}>生成时间</Text>
+                  <Text className={styles.detailValue}>{selectedRecord.createTime}</Text>
+                </View>
+                <View className={styles.detailItem}>
+                  <Text className={styles.detailLabel}>操作人</Text>
+                  <Text className={styles.detailValue}>{selectedRecord.operator}</Text>
+                </View>
               </View>
             </View>
-          ))}
+            
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionTitle}>导出内容项</Text>
+              <View className={styles.contentsList}>
+                {selectedRecord.contents.map((content, index) => (
+                  <View key={index} className={styles.contentTag}>
+                    <Text className={styles.contentTagText}>{content}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+            
+            <View className={styles.detailSection}>
+              <Text className={styles.detailSectionTitle}>包含航次 ({recordVoyages.length})</Text>
+              {recordVoyages.length === 0 ? (
+                <View className={styles.detailEmpty}>
+                  <Text>暂无航次信息</Text>
+                </View>
+              ) : (
+                <View className={styles.voyagePreviewList}>
+                  {recordVoyages.map((voyage) => {
+                    const statusConfig = getVoyageStatusConfig(voyage.status);
+                    return (
+                      <View key={voyage.id} className={styles.voyagePreviewItem}>
+                        <View className={styles.voyagePreviewInfo}>
+                          <Text className={styles.voyagePreviewNo}>{voyage.voyageNo}</Text>
+                          <Text className={styles.voyagePreviewRoute}>
+                            {voyage.shipName} · {voyage.loadingPort} → {voyage.unloadingPort}
+                          </Text>
+                          <Text className={styles.voyagePreviewDate}>
+                            {formatDate(voyage.departureTime)} · {formatWeight(voyage.totalWeight)}
+                          </Text>
+                        </View>
+                        <View className={classnames(styles.statusTag, styles[voyage.status])}>
+                          {statusConfig.text}
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          </ScrollView>
+          
+          <View className={styles.detailModalFooter}>
+            <Text className={styles.detailModalBtn} onClick={handleCloseRecordDetail}>
+              关闭
+            </Text>
+          </View>
         </View>
-      )}
-    </View>
+      </View>
+    );
+  };
+
+  const renderExportHistory = () => (
+    <>
+      <View className={styles.section}>
+        <Text className={styles.sectionTitle}>
+          <Text className={styles.titleIcon}>📁</Text>
+          导出记录
+        </Text>
+
+        <View className={styles.historyFilter}>
+          <View className={styles.filterRow}>
+            <View className={styles.filterItem}>
+              <Text className={styles.filterLabel}>文件格式</Text>
+              <View className={styles.formatFilterGroup}>
+                <View
+                  className={classnames(
+                    styles.formatFilterBtn,
+                    historyFormatFilter === 'all' && styles.active
+                  )}
+                  onClick={() => setHistoryFormatFilter('all')}
+                >
+                  全部
+                </View>
+                <View
+                  className={classnames(
+                    styles.formatFilterBtn,
+                    historyFormatFilter === 'excel' && styles.active
+                  )}
+                  onClick={() => setHistoryFormatFilter('excel')}
+                >
+                  Excel
+                </View>
+                <View
+                  className={classnames(
+                    styles.formatFilterBtn,
+                    historyFormatFilter === 'pdf' && styles.active
+                  )}
+                  onClick={() => setHistoryFormatFilter('pdf')}
+                >
+                  PDF
+                </View>
+                <View
+                  className={classnames(
+                    styles.formatFilterBtn,
+                    historyFormatFilter === 'csv' && styles.active
+                  )}
+                  onClick={() => setHistoryFormatFilter('csv')}
+                >
+                  CSV
+                </View>
+              </View>
+            </View>
+          </View>
+          
+          <View className={styles.filterRow}>
+            <View className={styles.filterItem}>
+              <Text className={styles.filterLabel}>生成日期</Text>
+              <View className={styles.dateFilterGroup}>
+                <View
+                  className={styles.dateFilterBtn}
+                  onClick={handleHistoryStartDateClick}
+                >
+                  {historyStartDate || '开始日期'}
+                  <Text className={styles.filterArrow}>▼</Text>
+                </View>
+                <Text className={styles.dateSeparator}>至</Text>
+                <View
+                  className={styles.dateFilterBtn}
+                  onClick={handleHistoryEndDateClick}
+                >
+                  {historyEndDate || '结束日期'}
+                  <Text className={styles.filterArrow}>▼</Text>
+                </View>
+                <View
+                  className={styles.resetFilterBtn}
+                  onClick={handleHistoryReset}
+                >
+                  重置
+                </View>
+              </View>
+            </View>
+          </View>
+          
+          <View className={styles.filterResult}>
+            <Text>共 {filteredExportRecords.length} 条记录</Text>
+          </View>
+        </View>
+
+        {filteredExportRecords.length === 0 ? (
+          <View className={styles.emptyState}>
+            <Text className={styles.emptyIcon}>📭</Text>
+            <Text className={styles.emptyText}>暂无符合条件的导出记录</Text>
+          </View>
+        ) : (
+          <View className={styles.recordList}>
+            {filteredExportRecords.map((record) => (
+              <View
+                key={record.id}
+                className={styles.recordItem}
+                onClick={() => handleViewRecord(record)}
+              >
+                <View className={styles.recordIcon}>
+                  {record.format === 'excel' && '📊'}
+                  {record.format === 'pdf' && '📄'}
+                  {record.format === 'csv' && '📋'}
+                </View>
+                <View className={styles.recordInfo}>
+                  <Text className={styles.recordName}>{record.fileName}</Text>
+                  <Text className={styles.recordMeta}>
+                    {record.formatText} · {record.voyageCount} 条 · {formatWeight(record.totalWeight)}
+                  </Text>
+                  <Text className={styles.recordTime}>
+                    生成于 {record.createTime} · {record.operator}
+                  </Text>
+                </View>
+                <View className={classnames(styles.recordStatus, styles[record.status])}>
+                  {record.statusText}
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+      {renderRecordDetailModal()}
+    </>
   );
 
   return (

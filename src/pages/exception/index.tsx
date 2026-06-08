@@ -222,6 +222,39 @@ const ExceptionPage: React.FC = () => {
             <Text className={styles.value}>{exception.reporter} · {getRelativeTime(exception.createTime)}</Text>
           </View>
 
+          {exception.handler && (
+            <View className={styles.processInfo}>
+              <View className={styles.processHeader}>
+                <Text className={styles.processLabel}>处理信息</Text>
+                <View className={classnames(styles.statusTag, styles[exception.status])}>
+                  {exception.statusText}
+                </View>
+              </View>
+              <View className={styles.processRow}>
+                <Text className={styles.processItem}>
+                  <Text className={styles.processIcon}>👨‍💼</Text>
+                  处理人: {exception.handler}
+                </Text>
+                {exception.handleTime && (
+                  <Text className={styles.processItem}>
+                    <Text className={styles.processIcon}>⏰</Text>
+                    处理时间: {exception.handleTime}
+                  </Text>
+                )}
+              </View>
+              {exception.handleResult && (
+                <View className={styles.processResult}>
+                  <Text className={styles.processResultLabel}>处理意见:</Text>
+                  <Text className={styles.processResultText}>
+                    {exception.handleResult.length > 50 
+                      ? exception.handleResult.slice(0, 50) + '...' 
+                      : exception.handleResult}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+
           {exception.photos.length > 0 && (
             <ScrollView className={styles.photoPreview} scrollX>
               {exception.photos.slice(0, 3).map((photo, index) => (

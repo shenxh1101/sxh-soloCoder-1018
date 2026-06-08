@@ -74,6 +74,24 @@ const VoyagePage: React.FC = () => {
     });
   };
 
+  const handleBoardClick = () => {
+    Taro.navigateTo({
+      url: '/pages/voyage-board/index'
+    });
+  };
+
+  const handleTasksClick = () => {
+    Taro.navigateTo({
+      url: '/pages/voyage-tasks/index'
+    });
+  };
+
+  const handleFleetClick = () => {
+    Taro.navigateTo({
+      url: '/pages/fleet-overview/index'
+    });
+  };
+
   return (
     <View className={styles.pageContainer}>
       <View className={styles.header}>
@@ -86,6 +104,38 @@ const VoyagePage: React.FC = () => {
         <Text className={styles.subtitle}>
           {state.userRole === 'crew' ? '查看我的航次任务' : '管理所有航次进度'}
         </Text>
+      </View>
+
+      <View className={styles.quickEntry}>
+        {state.userRole === 'dispatcher' ? (
+          <>
+            <View className={styles.entryCard} onClick={handleBoardClick}>
+              <Text className={styles.entryIcon}>📊</Text>
+              <View className={styles.entryInfo}>
+                <Text className={styles.entryTitle}>航次执行看板</Text>
+                <Text className={styles.entryDesc}>监控航次执行全流程</Text>
+              </View>
+              <Text className={styles.entryArrow}>→</Text>
+            </View>
+            <View className={styles.entryCard} onClick={handleFleetClick}>
+              <Text className={styles.entryIcon}>🚢</Text>
+              <View className={styles.entryInfo}>
+                <Text className={styles.entryTitle}>船队总览</Text>
+                <Text className={styles.entryDesc}>查看船队运行状态</Text>
+              </View>
+              <Text className={styles.entryArrow}>→</Text>
+            </View>
+          </>
+        ) : (
+          <View className={styles.entryCard} onClick={handleTasksClick}>
+            <Text className={styles.entryIcon}>📋</Text>
+            <View className={styles.entryInfo}>
+              <Text className={styles.entryTitle}>航次任务清单</Text>
+              <Text className={styles.entryDesc}>查看待办和已完成任务</Text>
+            </View>
+            <Text className={styles.entryArrow}>→</Text>
+          </View>
+        )}
       </View>
 
       <ScrollView className={styles.filterBar} scrollX enableFlex>

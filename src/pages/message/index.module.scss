@@ -353,6 +353,27 @@
       }
     }
 
+    .confirmInfo {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      padding: $spacing-sm $spacing-md;
+      background: rgba(0, 180, 42, 0.08);
+      border-radius: $radius-md;
+      margin-bottom: $spacing-lg;
+      border-left: 4rpx solid $color-success;
+
+      .confirmIcon {
+        font-size: $font-size-lg;
+      }
+
+      .confirmText {
+        font-size: $font-size-sm;
+        color: $color-success;
+        font-weight: $font-weight-medium;
+      }
+    }
+
     .modalContentText {
       font-size: $font-size-md;
       color: $color-text-primary;

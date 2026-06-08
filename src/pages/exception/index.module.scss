@@ -373,3 +373,68 @@
     color: $color-text-tertiary;
   }
 }
+
+.processInfo {
+  margin-top: $spacing-md;
+  padding: $spacing-md;
+  background: rgba(0, 102, 204, 0.05);
+  border-radius: $radius-md;
+  border-left: 4rpx solid $color-primary;
+
+  .processHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-sm;
+
+    .processLabel {
+      font-size: $font-size-sm;
+      color: $color-primary;
+      font-weight: $font-weight-medium;
+    }
+
+    .statusTag {
+      padding: 4rpx 12rpx;
+      border-radius: $radius-round;
+      font-size: $font-size-xs;
+    }
+  }
+
+  .processRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+    margin-bottom: $spacing-sm;
+
+    .processItem {
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      display: flex;
+      align-items: center;
+      gap: 4rpx;
+
+      .processIcon {
+        font-size: $font-size-md;
+      }
+    }
+  }
+
+  .processResult {
+    margin-top: $spacing-sm;
+    padding-top: $spacing-sm;
+    border-top: 1rpx solid rgba(0, 0, 0, 0.08);
+
+    .processResultLabel {
+      display: block;
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+      margin-bottom: 4rpx;
+    }
+
+    .processResultText {
+      font-size: $font-size-sm;
+      color: $color-text-primary;
+      line-height: 1.6;
+    }
+  }
+}

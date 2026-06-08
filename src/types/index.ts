@@ -196,3 +196,30 @@ export interface ExportRecord {
   createTime: string;
   operator: string;
 }
+
+export type VoyageTaskType = 'dynamic' | 'loading' | 'supply' | 'exception' | 'arrival';
+
+export interface VoyageTask {
+  id: string;
+  voyageId: string;
+  type: VoyageTaskType;
+  typeText: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'completed';
+  statusText: string;
+  submitTime?: string;
+  submitter?: string;
+  relatedRecordId?: string;
+  required: boolean;
+}
+
+export interface VoyageBoardSummary {
+  loadingCount: number;
+  loadingConfirmedCount: number;
+  supplyCount: number;
+  exceptionCount: number;
+  exceptionPendingCount: number;
+  messageCount: number;
+  messageReadCount: number;
+}
